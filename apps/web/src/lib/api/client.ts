@@ -16,9 +16,33 @@ export interface ApiAuthHandlers {
 
 let authHandlers: ApiAuthHandlers = {};
 let refreshPromise: Promise<void> | null = null;
+let mockInitPromise: Promise<void> | null = null;
 
 export function configureApiAuthHandlers(handlers: ApiAuthHandlers): void {
   authHandlers = handlers;
+}
+
+export function resetMockInitForTests(): void {
+  mockInitPromise = null;
+}
+
+export function ensureMocksInitialized(): Promise<void> {
+  if (typeof window === "undefined" || process.env.NEXT_PUBLIC_USE_MOCKS !== "true") {
+    return Promise.resolve();
+  }
+
+  if (!mockInitPromise) {
+    mockInitPromise = import("@/mocks")
+      .then(({ setupMocks }) => {
+        setupMocks(apiClient);
+      })
+      .catch((error: unknown) => {
+        mockInitPromise = null;
+        throw error;
+      });
+  }
+
+  return mockInitPromise;
 }
 
 function generateRequestId(): string {
@@ -100,7 +124,11 @@ export const apiClient: AxiosInstance = axios.create({
   timeout: REQUEST_TIMEOUT_MS,
 });
 
-apiClient.interceptors.request.use((config) => {
+apiClient.interceptors.request.use(async (config) => {
+  await ensureMocksInitialized();
+  if (apiClient.defaults.adapter) {
+    config.adapter = apiClient.defaults.adapter;
+  }
   config.headers.set("x-request-id", generateRequestId());
   return config;
 });

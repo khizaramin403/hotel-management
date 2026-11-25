@@ -10,6 +10,7 @@ import {
   login,
   queryKeys,
 } from "./index";
+import { resetMockInitForTests } from "./client";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -36,12 +37,15 @@ describe("apiClient and endpoint wrappers", () => {
   let mock: MockAdapter;
 
   beforeEach(() => {
+    vi.stubEnv("NEXT_PUBLIC_USE_MOCKS", "false");
+    resetMockInitForTests();
     mock = new MockAdapter(apiClient);
     configureApiAuthHandlers({});
   });
 
   afterEach(() => {
     mock.restore();
+    resetMockInitForTests();
     configureApiAuthHandlers({});
     vi.unstubAllEnvs();
     vi.restoreAllMocks();

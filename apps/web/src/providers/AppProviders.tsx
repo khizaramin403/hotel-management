@@ -4,9 +4,10 @@ import { useEffect, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Provider } from "react-redux";
-import { configureApiAuthHandlers } from "@/lib/api/client";
+import { configureApiAuthHandlers, ensureMocksInitialized } from "@/lib/api/client";
+import { getMe } from "@/lib/api/endpoints/auth";
 import { makeStore } from "@/store";
-import { clearAuth } from "@/store/slices/authSlice";
+import { clearAuth, setAuthLoading, setAuthUser } from "@/store/slices/authSlice";
 import { AntdProvider } from "./AntdProvider";
 
 const ReactQueryDevtools =
@@ -37,12 +38,33 @@ export function AppProviders({ children }: Readonly<{ children: ReactNode }>) {
   const [queryClient] = useState(() => makeQueryClient());
 
   useEffect(() => {
+    let cancelled = false;
+
     configureApiAuthHandlers({
       onUnauthorized: () => {
         store.dispatch(clearAuth());
       },
     });
+
+    async function bootstrapAuth(): Promise<void> {
+      store.dispatch(setAuthLoading());
+      try {
+        await ensureMocksInitialized();
+        const user = await getMe();
+        if (!cancelled) {
+          store.dispatch(setAuthUser(user));
+        }
+      } catch {
+        if (!cancelled) {
+          store.dispatch(clearAuth());
+        }
+      }
+    }
+
+    void bootstrapAuth();
+
     return () => {
+      cancelled = true;
       configureApiAuthHandlers({});
     };
   }, [store]);
