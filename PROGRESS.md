@@ -15,3 +15,4 @@ Step list and prompts: PROMPTS.md and the PHASE*_PROMPTS.md files.
 2026-11-25 | STEP 1.4 | Created shared UI primitives, image URL and en-GB format helpers, /design-check showcase, and Vitest unit tests
 2026-11-25 | STEP 1.5 | Configured Redux Toolkit store and 5 slices with narrow selectors, TanStack Query AppProviders, and Vitest RTL jsdom tests
 2026-11-25 | STEP 1.6 | Built typed Axios API client with refresh queue, ApiClientError normalizer, REST endpoints, queryKeys, and mocked adapter tests
+2026-11-25 | STEP 1.7 | Built dynamic axios-mock-adapter infrastructure, seeded in-memory DB, auth mock handlers with mock_role cookie, startup auth bootstrap, and tests
