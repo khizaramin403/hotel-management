@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Provider } from "react-redux";
+import { configureApiAuthHandlers } from "@/lib/api/client";
 import { makeStore } from "@/store";
+import { clearAuth } from "@/store/slices/authSlice";
 import { AntdProvider } from "./AntdProvider";
 
 const ReactQueryDevtools =
@@ -33,6 +35,17 @@ export function makeQueryClient() {
 export function AppProviders({ children }: Readonly<{ children: ReactNode }>) {
   const [store] = useState(() => makeStore());
   const [queryClient] = useState(() => makeQueryClient());
+
+  useEffect(() => {
+    configureApiAuthHandlers({
+      onUnauthorized: () => {
+        store.dispatch(clearAuth());
+      },
+    });
+    return () => {
+      configureApiAuthHandlers({});
+    };
+  }, [store]);
 
   return (
     <Provider store={store}>
