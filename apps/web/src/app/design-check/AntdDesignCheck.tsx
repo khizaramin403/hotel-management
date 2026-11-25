@@ -263,7 +263,7 @@ export function AntdDesignCheck() {
                 id="design-check-input-error-text"
                 className="mt-1.5 flex items-center gap-1.5 font-sans text-[13px] leading-[20px] text-error"
               >
-                <ExclamationCircleOutlined />
+                <ExclamationCircleOutlined aria-hidden="true" />
                 <span>Enter a valid email</span>
               </div>
             </div>
@@ -294,10 +294,17 @@ export function AntdDesignCheck() {
             </div>
 
             <div className="md:col-span-2">
-              <div className="mb-1.5 font-sans text-[14px] font-medium leading-[20px] text-ink">
+              <label
+                htmlFor="design-check-dates"
+                className="mb-1.5 block font-sans text-[14px] font-medium leading-[20px] text-ink"
+              >
                 Stay dates
-              </div>
-              <DatePicker.RangePicker className="w-full" placeholder={["Check-in", "Check-out"]} />
+              </label>
+              <DatePicker.RangePicker
+                id="design-check-dates"
+                className="w-full"
+                placeholder={["Check-in", "Check-out"]}
+              />
             </div>
           </div>
         </div>
@@ -306,11 +313,12 @@ export function AntdDesignCheck() {
           <h3 className="mb-4 font-serif text-[20px] font-medium leading-[28px] text-ink md:text-[22px] md:leading-[30px]">
             Table
           </h3>
-          <div className="overflow-x-auto">
+          <div className="max-w-full overflow-x-auto">
             <Table<SampleBookingRow>
               columns={TABLE_COLUMNS}
               dataSource={[...SAMPLE_BOOKINGS]}
               pagination={false}
+              scroll={{ x: "max-content" }}
             />
           </div>
         </div>

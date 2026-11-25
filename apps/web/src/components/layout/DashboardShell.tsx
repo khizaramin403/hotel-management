@@ -160,7 +160,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
             <Tooltip title="Open navigation menu">
               <Button
                 type="text"
-                icon={<MenuOutlined className="text-[18px]" aria-hidden="true" />}
+                icon={<MenuOutlined className="text-[24px]" aria-hidden="true" />}
                 aria-label="Open navigation menu"
                 className="min-h-[44px] min-w-[44px] lg:hidden"
                 onClick={() => dispatch(setMobileMenuOpen(true))}
@@ -193,9 +193,9 @@ export function DashboardShell({ children }: DashboardShellProps) {
               <Badge dot={false}>
                 <Button
                   type="text"
-                  icon={<BellOutlined className="text-[18px]" aria-hidden="true" />}
+                  icon={<BellOutlined className="text-[24px]" aria-hidden="true" />}
                   aria-label="Notifications"
-                  className="min-h-[40px] min-w-[40px]"
+                  className="min-h-[44px] min-w-[44px] md:min-h-[40px] md:min-w-[40px]"
                 />
               </Badge>
             </Tooltip>
@@ -209,7 +209,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
                 <button
                   type="button"
                   aria-label="Account menu"
-                  className="flex min-h-[40px] cursor-pointer items-center gap-2 rounded-md border border-transparent bg-transparent px-2 py-1 text-left transition-colors hover:bg-green-50"
+                  className="flex min-h-[44px] cursor-pointer items-center gap-2 rounded-md border border-transparent bg-transparent px-2 py-1 text-left transition-colors hover:bg-green-50 md:min-h-[40px]"
                 >
                   <Avatar
                     size={32}

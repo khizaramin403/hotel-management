@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Button, Result } from "antd";
+import { Button } from "antd";
+import { ErrorState } from "@/components/ui";
 
 export default function ErrorPage({
   reset,
@@ -13,18 +14,12 @@ export default function ErrorPage({
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center bg-canvas px-4 py-12">
-      <Result
+      <ErrorState
         status="500"
         title="Something went wrong"
-        subTitle="An unexpected error occurred while loading this page."
-        extra={
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Button type="primary" onClick={reset}>
-              Try again
-            </Button>
-            <Button onClick={() => router.push("/")}>Back to home</Button>
-          </div>
-        }
+        description="An unexpected error occurred while loading this page."
+        onRetry={reset}
+        action={<Button onClick={() => router.push("/")}>Back to home</Button>}
       />
     </div>
   );

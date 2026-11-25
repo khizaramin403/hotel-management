@@ -3,7 +3,8 @@
 import { useEffect, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import type { Role } from "@hotel/shared";
-import { Button, Result, Skeleton } from "antd";
+import { Button, Skeleton } from "antd";
+import { ErrorState } from "@/components/ui";
 import { isDashboardRouteAllowed } from "@/lib/navigation";
 import { useAppSelector } from "@/store/hooks";
 import { selectAuthStatus, selectAuthUser } from "@/store/slices/authSlice";
@@ -55,11 +56,11 @@ export function RoleGuard({ allowedRoles, enforceRouteRole = false, children }: 
   if (!hasAllowedRole || !hasRouteAccess) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center p-6">
-        <Result
+        <ErrorState
           status="403"
           title="You do not have access"
-          subTitle="You do not have permission to view this page."
-          extra={
+          description="You do not have permission to view this page."
+          action={
             <Button type="primary" onClick={() => router.push("/")}>
               Back to home
             </Button>

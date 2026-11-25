@@ -9,8 +9,10 @@
   border: 0 solid #e7e5df;
 }
 
+html,
 body {
   margin: 0;
+  overflow-x: clip;
   background: #f7f6f2;
   color: #1f2933;
   font-family: var(--font-inter), system-ui, sans-serif;
@@ -116,6 +118,10 @@ h3 {
   font-size: 20px;
 }
 
+.dashboard-sidebar-menu.ant-menu-dark .ant-menu-item .ant-menu-title-content {
+  margin-inline-start: 12px;
+}
+
 .dashboard-sidebar-menu.ant-menu-dark .ant-menu-item-selected::before {
   content: "";
   position: absolute;
@@ -151,6 +157,32 @@ h3 {
 
 .dashboard-nav-drawer .ant-drawer-close:hover {
   color: #ffffff;
+}
+
+@media (max-width: 767px) {
+  .ant-btn {
+    min-height: 44px;
+  }
+
+  .ant-btn.ant-btn-icon-only {
+    min-width: 44px;
+  }
+
+  .ant-input-affix-wrapper,
+  .ant-input:not(.ant-input-affix-wrapper .ant-input),
+  .ant-select-selector,
+  .ant-picker {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .ant-input-affix-wrapper .ant-input {
+    font-size: 16px;
+  }
+
+  .ant-modal {
+    max-width: calc(100vw - 32px) !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

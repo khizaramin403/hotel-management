@@ -77,7 +77,7 @@ export function AuthFormField<
                     aria-label={showPassword ? "Hide password" : "Show password"}
                     aria-pressed={showPassword}
                     onClick={() => setShowPassword((prev) => !prev)}
-                    className="inline-flex min-h-[32px] min-w-[32px] cursor-pointer items-center justify-center rounded border-0 bg-transparent p-1 text-muted transition-colors hover:text-ink"
+                    className="-my-2 -mr-1 inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded border-0 bg-transparent p-1 text-muted transition-colors hover:text-ink md:my-0 md:mr-0 md:min-h-[32px] md:min-w-[32px]"
                   >
                     {showPassword ? (
                       <EyeInvisibleOutlined className="text-[16px]" aria-hidden="true" />
