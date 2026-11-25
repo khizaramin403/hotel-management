@@ -1,14 +1,19 @@
-import type {
-  ErrorCode,
-  ErrorResponse,
-  PaginationMeta,
-  Role,
-  User,
-  ValidationErrorDetail,
+import {
+  ERROR_CODE,
+  type Booking,
+  type ErrorCode,
+  type ErrorResponse,
+  type Image,
+  type PaginationMeta,
+  type Role,
+  type RoomDetail,
+  type User,
+  type ValidationErrorDetail,
 } from "@hotel/shared";
 import type { AxiosRequestConfig } from "axios";
 import type { z } from "zod";
 import { extractRequestId } from "@/lib/api/errors";
+import { buildRoomImageUrls, cloneRoomDetail, createSeedRooms } from "./seed/rooms";
 
 const DEFAULT_MOCK_LATENCY_MS = 400;
 const MOCK_ROLE_COOKIE_NAME = "mock_role";
@@ -45,12 +50,34 @@ interface MockDbState {
   users: MockUserRecord[];
   nextUserId: number;
   currentUserId: number | null;
+  rooms: RoomDetail[];
+  nextRoomId: number;
+  nextImageId: number;
+  bookings: Booking[];
 }
+
+function getMaxImageId(rooms: readonly RoomDetail[]): number {
+  let maxId = 0;
+  for (const room of rooms) {
+    for (const img of room.images) {
+      if (img.id > maxId) {
+        maxId = img.id;
+      }
+    }
+  }
+  return maxId;
+}
+
+const initialSeedRooms = createSeedRooms();
 
 const dbState: MockDbState = {
   users: SEED_USERS.map((user) => ({ ...user })),
   nextUserId: 4,
   currentUserId: null,
+  rooms: initialSeedRooms,
+  nextRoomId: initialSeedRooms.length + 1,
+  nextImageId: getMaxImageId(initialSeedRooms) + 1,
+  bookings: [],
 };
 
 export function getMockLatencyMs(): number {
@@ -96,9 +123,14 @@ export function readMockRoleCookie(): Role | null {
 }
 
 export function resetMockDb(): void {
+  const freshRooms = createSeedRooms();
   dbState.users = SEED_USERS.map((user) => ({ ...user }));
   dbState.nextUserId = 4;
   dbState.currentUserId = null;
+  dbState.rooms = freshRooms;
+  dbState.nextRoomId = freshRooms.length + 1;
+  dbState.nextImageId = getMaxImageId(freshRooms) + 1;
+  dbState.bookings = [];
   clearMockRoleCookie();
 }
 
@@ -177,6 +209,149 @@ export function getCurrentSessionUser(): MockUserRecord | null {
   }
 
   return null;
+}
+
+export function requireAuthenticated(
+  config: AxiosRequestConfig,
+): { user: MockUserRecord } | { error: ReturnType<typeof mockError> } {
+  const user = getCurrentSessionUser();
+  if (!user) {
+    return {
+      error: mockError(401, ERROR_CODE.UNAUTHENTICATED, "Authentication required", config),
+    };
+  }
+  return { user };
+}
+
+export function requireAdmin(
+  config: AxiosRequestConfig,
+): { user: MockUserRecord } | { error: ReturnType<typeof mockError> } {
+  const auth = requireAuthenticated(config);
+  if ("error" in auth) {
+    return auth;
+  }
+  if (auth.user.role !== "admin") {
+    return {
+      error: mockError(403, ERROR_CODE.FORBIDDEN, "Access denied", config),
+    };
+  }
+  return auth;
+}
+
+export function getMockRooms(): RoomDetail[] {
+  return dbState.rooms;
+}
+
+export function findMockRoomById(id: number): RoomDetail | undefined {
+  return dbState.rooms.find((room) => room.id === id);
+}
+
+export function findMockRoomByNumber(
+  number: string,
+  excludeRoomId?: number,
+): RoomDetail | undefined {
+  const normalized = number.trim().toLowerCase();
+  return dbState.rooms.find(
+    (room) => room.number.trim().toLowerCase() === normalized && room.id !== excludeRoomId,
+  );
+}
+
+export function createMockRoom(input: {
+  number: string;
+  type: RoomDetail["type"];
+  pricePerNight: number;
+  capacity: number;
+  facilities: string[];
+  description: string;
+}): RoomDetail {
+  const created: RoomDetail = {
+    id: dbState.nextRoomId,
+    number: input.number.trim(),
+    type: input.type,
+    pricePerNight: input.pricePerNight,
+    capacity: input.capacity,
+    facilities: [...input.facilities],
+    description: input.description.trim(),
+    isActive: true,
+    coverImage: null,
+    images: [],
+  };
+  dbState.nextRoomId += 1;
+  dbState.rooms.push(created);
+  return cloneRoomDetail(created);
+}
+
+export function addMockRoomImage(roomId: number, key: string, isCover: boolean): Image | null {
+  const room = findMockRoomById(roomId);
+  if (!room) {
+    return null;
+  }
+
+  if (isCover) {
+    for (const existing of room.images) {
+      existing.isCover = false;
+    }
+  }
+
+  const shouldBeCover = isCover || room.images.length === 0;
+  const image: Image = {
+    id: dbState.nextImageId,
+    key: key.trim(),
+    isCover: shouldBeCover,
+    sortOrder: room.images.length,
+    urls: buildRoomImageUrls(key.trim()),
+  };
+  dbState.nextImageId += 1;
+  room.images.push(image);
+  room.coverImage = room.images.find((img) => img.isCover) ?? room.images[0] ?? null;
+
+  return { ...image, urls: { ...image.urls } };
+}
+
+export function deleteMockRoomImage(roomId: number, imageId: number): boolean {
+  const room = findMockRoomById(roomId);
+  if (!room) {
+    return false;
+  }
+
+  const idx = room.images.findIndex((img) => img.id === imageId);
+  if (idx === -1) {
+    return false;
+  }
+
+  const [removed] = room.images.splice(idx, 1);
+  if (removed?.isCover && room.images[0]) {
+    room.images[0].isCover = true;
+  }
+  room.images.forEach((img, index) => {
+    img.sortOrder = index;
+  });
+  room.coverImage = room.images.find((img) => img.isCover) ?? room.images[0] ?? null;
+  return true;
+}
+
+export function getMockBookings(): Booking[] {
+  return dbState.bookings;
+}
+
+export function addMockBooking(booking: Booking): void {
+  dbState.bookings.push(booking);
+}
+
+export function isRoomAvailableForDates(
+  roomId: number,
+  checkIn: string,
+  checkOut: string,
+): boolean {
+  for (const booking of dbState.bookings) {
+    if (booking.roomId !== roomId || booking.status === "cancelled") {
+      continue;
+    }
+    if (booking.checkIn < checkOut && booking.checkOut > checkIn) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function successEnvelope<T>(data: T): { success: true; data: T } {

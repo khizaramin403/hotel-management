@@ -6,51 +6,23 @@ import {
   registerSchema,
   staffQuerySchema,
 } from "@hotel/shared";
-import type { AxiosRequestConfig } from "axios";
 import type MockAdapter from "axios-mock-adapter";
 import {
   createMockUser,
   deleteMockUserById,
   findMockUserByEmail,
-  getCurrentSessionUser,
   getMockUsers,
   mockError,
   paginatedEnvelope,
   parseJsonBody,
+  requireAdmin,
+  requireAuthenticated,
   responseHeadersForRequest,
   setCurrentSessionUser,
   successEnvelope,
   toPublicUser,
   zodIssuesToDetails,
-  type MockUserRecord,
 } from "../db";
-
-function requireAuthenticated(
-  config: AxiosRequestConfig,
-): { user: MockUserRecord } | { error: ReturnType<typeof mockError> } {
-  const user = getCurrentSessionUser();
-  if (!user) {
-    return {
-      error: mockError(401, ERROR_CODE.UNAUTHENTICATED, "Authentication required", config),
-    };
-  }
-  return { user };
-}
-
-function requireAdmin(
-  config: AxiosRequestConfig,
-): { user: MockUserRecord } | { error: ReturnType<typeof mockError> } {
-  const auth = requireAuthenticated(config);
-  if ("error" in auth) {
-    return auth;
-  }
-  if (auth.user.role !== "admin") {
-    return {
-      error: mockError(403, ERROR_CODE.FORBIDDEN, "Access denied", config),
-    };
-  }
-  return auth;
-}
 
 export function registerAuthHandlers(mock: MockAdapter): void {
   mock.onPost("/auth/register").reply((config) => {
