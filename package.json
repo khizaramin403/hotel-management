@@ -6,10 +6,21 @@
     "node": ">=20"
   },
   "scripts": {
-    "lint": "echo lint placeholder - no packages configured yet",
-    "typecheck": "echo typecheck placeholder - no packages configured yet",
-    "test": "echo test placeholder - no packages configured yet",
-    "build": "echo build placeholder - no packages configured yet",
-    "format": "echo format placeholder - no packages configured yet"
+    "lint": "eslint .",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "build": "pnpm -r --if-present build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.7",
+    "cross-env": "^10.1.0",
+    "eslint": "^10.15.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.10.1",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.74.0"
   }
 }
