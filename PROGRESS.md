@@ -19,3 +19,4 @@ Step list and prompts: PROMPTS.md and the PHASE*_PROMPTS.md files.
 2026-11-25 | STEP 1.8 | Seeded 12 mock rooms with image URLs and built Zod-validated room list, detail, availability, admin CRUD, and image mock handlers with tests
 2026-11-25 | STEP 1.9 | Seeded 14 relative-date bookings and built booking, 2.5 s payment webhook, expiry-on-read, status transition, and report mock handlers with tests
 2026-11-25 | STEP 1.10 | Created PublicHeader, DashboardShell, single-source navigation config, client RoleGuard, proxy route protection, error/loading boundaries, placeholder PageHeaders, and tests
+2026-11-25 | STEP 1.11 | Built /login and /register split layouts with React Hook Form Zod validation, role-aware next redirects, header logout cache clear, and mock auth tests
