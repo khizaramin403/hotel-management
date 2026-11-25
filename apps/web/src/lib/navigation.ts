@@ -124,3 +124,51 @@ export function getPostLoginHome(role: Role): string {
   }
   return "/";
 }
+
+export function isSafeInternalPath(path: string): boolean {
+  if (!path.startsWith("/") || path.startsWith("//") || path.startsWith("/\\")) {
+    return false;
+  }
+  try {
+    const parsed = new URL(path, "http://localhost");
+    return parsed.origin === "http://localhost" && parsed.pathname.startsWith("/");
+  } catch {
+    return false;
+  }
+}
+
+export function isRouteAllowedForRole(pathname: string, role: Role): boolean {
+  if (pathname === "/login" || pathname === "/register") {
+    return false;
+  }
+  if (
+    pathname === "/my-bookings" ||
+    pathname.startsWith("/my-bookings/") ||
+    pathname === "/chat" ||
+    pathname.startsWith("/chat/") ||
+    pathname === "/book" ||
+    pathname.startsWith("/book/")
+  ) {
+    return role === "guest";
+  }
+  if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) {
+    return isDashboardRouteAllowed(pathname, role);
+  }
+  return true;
+}
+
+export function resolvePostLoginRedirect(role: Role, nextParam: string | null | undefined): string {
+  const fallback = getPostLoginHome(role);
+  if (!nextParam) {
+    return fallback;
+  }
+  const trimmed = nextParam.trim();
+  if (!isSafeInternalPath(trimmed)) {
+    return fallback;
+  }
+  const [pathnameOnly] = trimmed.split(/[?#]/);
+  if (!pathnameOnly || !isRouteAllowedForRole(pathnameOnly, role)) {
+    return fallback;
+  }
+  return trimmed;
+}

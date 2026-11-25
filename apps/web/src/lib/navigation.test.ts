@@ -6,6 +6,7 @@ import {
   getPostLoginHome,
   isDashboardRouteAllowed,
   matchDashboardNavItem,
+  resolvePostLoginRedirect,
 } from "./navigation";
 
 describe("navigation config", () => {
@@ -78,5 +79,19 @@ describe("navigation config", () => {
     expect(getPostLoginHome("admin")).toBe("/dashboard");
     expect(getPostLoginHome("staff")).toBe("/dashboard/bookings");
     expect(getPostLoginHome("guest")).toBe("/");
+  });
+
+  it("resolves next redirect safely based on user role", () => {
+    expect(resolvePostLoginRedirect("guest", "/book/2?nights=2")).toBe("/book/2?nights=2");
+    expect(resolvePostLoginRedirect("guest", "/dashboard")).toBe("/");
+    expect(resolvePostLoginRedirect("guest", "https://evil.com")).toBe("/");
+    expect(resolvePostLoginRedirect("guest", "//evil.com")).toBe("/");
+
+    expect(resolvePostLoginRedirect("staff", "/dashboard/chat")).toBe("/dashboard/chat");
+    expect(resolvePostLoginRedirect("staff", "/dashboard/rooms")).toBe("/dashboard/bookings");
+    expect(resolvePostLoginRedirect("staff", "/my-bookings")).toBe("/dashboard/bookings");
+
+    expect(resolvePostLoginRedirect("admin", "/dashboard/rooms")).toBe("/dashboard/rooms");
+    expect(resolvePostLoginRedirect("admin", "/login")).toBe("/dashboard");
   });
 });

@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   BellOutlined,
   HomeOutlined,
@@ -47,6 +48,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
   const user = useAppSelector(selectAuthUser);
   const sidebarCollapsed = useAppSelector(selectSidebarCollapsed);
   const mobileMenuOpen = useAppSelector(selectMobileMenuOpen);
@@ -68,7 +70,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
   const handleLogout = async () => {
     dispatch(setMobileMenuOpen(false));
-    await performClientLogout(dispatch);
+    await performClientLogout(dispatch, queryClient);
     router.push("/login");
   };
 

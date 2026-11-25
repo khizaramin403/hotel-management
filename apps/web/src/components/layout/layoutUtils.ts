@@ -1,3 +1,4 @@
+import type { QueryClient } from "@tanstack/react-query";
 import { logout } from "@/lib/api/endpoints/auth";
 import { clearMockRoleCookie } from "@/mocks/db";
 import type { AppDispatch } from "@/store";
@@ -17,7 +18,10 @@ export function getUserInitials(name: string): string {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
-export async function performClientLogout(dispatch: AppDispatch): Promise<void> {
+export async function performClientLogout(
+  dispatch: AppDispatch,
+  queryClient?: QueryClient,
+): Promise<void> {
   try {
     await logout();
   } catch {
@@ -25,5 +29,6 @@ export async function performClientLogout(dispatch: AppDispatch): Promise<void> 
   } finally {
     clearMockRoleCookie();
     dispatch(clearAuth());
+    queryClient?.clear();
   }
 }

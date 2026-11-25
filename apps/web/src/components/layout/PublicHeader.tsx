@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   CalendarOutlined,
   DashboardOutlined,
@@ -27,6 +28,7 @@ export function PublicHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
   const user = useAppSelector(selectAuthUser);
   const authStatus = useAppSelector(selectAuthStatus);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -35,7 +37,7 @@ export function PublicHeader() {
 
   const handleLogout = async () => {
     setDrawerOpen(false);
-    await performClientLogout(dispatch);
+    await performClientLogout(dispatch, queryClient);
     router.push("/");
   };
 
