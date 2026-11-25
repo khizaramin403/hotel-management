@@ -89,6 +89,70 @@ h3 {
   box-shadow: 0 0 0 3px rgba(31, 77, 69, 0.15);
 }
 
+.dashboard-sidebar-menu.ant-menu-dark {
+  background: #14312c;
+}
+
+.dashboard-sidebar-menu.ant-menu-dark .ant-menu-item {
+  position: relative;
+  width: calc(100% - 24px);
+  margin-inline: 12px;
+  margin-block: 4px;
+  padding-inline: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.dashboard-sidebar-menu.ant-menu-dark.ant-menu-inline-collapsed .ant-menu-item {
+  width: calc(100% - 16px);
+  margin-inline: 8px;
+  padding-inline: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-sidebar-menu.ant-menu-dark .ant-menu-item .ant-menu-item-icon {
+  font-size: 20px;
+}
+
+.dashboard-sidebar-menu.ant-menu-dark .ant-menu-item-selected::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 2px;
+  background: #b8893b;
+}
+
+.dashboard-sidebar-menu.ant-menu-dark a:focus-visible,
+.dashboard-sidebar-menu.ant-menu-dark .ant-menu-item:focus-visible,
+.dashboard-nav-drawer :focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.dashboard-nav-drawer .ant-drawer-content {
+  background: #14312c;
+  color: #ffffff;
+}
+
+.dashboard-nav-drawer .ant-drawer-header {
+  background: #14312c;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.dashboard-nav-drawer .ant-drawer-close {
+  color: #b7c7c2;
+}
+
+.dashboard-nav-drawer .ant-drawer-close:hover {
+  color: #ffffff;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
