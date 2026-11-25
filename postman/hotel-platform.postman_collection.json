@@ -1,0 +1,1891 @@
+{
+  "info": {
+    "_postman_id": "4b986463-f901-461c-9961-cbaec83c6601",
+    "name": "Hotel Platform API",
+    "description": "API tests for the Hotel Booking Platform (all requests go through the Nginx API gateway). Select the 'Hotel Platform - Local' environment. Cookies are handled automatically. Log in as the matching role before role-specific requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00 Health",
+      "item": [
+        {
+          "name": "Gateway health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host_url}}/health",
+              "host": [
+                "{{host_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Nginx (API gateway) health check."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": ""
+    },
+    {
+      "name": "01 Auth",
+      "item": [
+        {
+          "name": "Register guest",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{$randomFullName}}\",\n  \"email\": \"{{$randomEmail}}\",\n  \"password\": \"Passw0rd!123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Role is guest\", () => pm.expect(pm.response.json().data.user.role).to.eql(\"guest\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as guest",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Sets httpOnly cookies. Postman stores them in its cookie jar and sends them automatically. Logging in as another role replaces the session.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{guest_email}}\",\n  \"password\": \"{{guest_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Role is guest\", () => pm.expect(pm.response.json().data.user.role).to.eql(\"guest\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as staff",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Sets httpOnly cookies. Postman stores them in its cookie jar and sends them automatically. Logging in as another role replaces the session.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{staff_email}}\",\n  \"password\": \"{{staff_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Role is staff\", () => pm.expect(pm.response.json().data.user.role).to.eql(\"staff\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Sets httpOnly cookies. Postman stores them in its cookie jar and sends them automatically. Logging in as another role replaces the session.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Role is admin\", () => pm.expect(pm.response.json().data.user.role).to.eql(\"admin\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Current user (me)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Has a role\", () => pm.expect(pm.response.json().data.user.role).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List staff (admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/staff",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "staff"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create staff (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/staff",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "staff"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Staff\",\n  \"email\": \"{{$randomEmail}}\",\n  \"password\": \"Passw0rd!123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"staff_id\", pm.response.json().data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete staff (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/staff/{{staff_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "staff",
+                "{{staff_id}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Run a Login request first. Staff management needs the admin session."
+    },
+    {
+      "name": "02 Rooms",
+      "item": [
+        {
+          "name": "List rooms (filters + pagination)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/rooms?type=Deluxe&minPrice=5000&maxPrice=30000&guests=2&page=1&limit=12",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "rooms"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "Deluxe"
+                },
+                {
+                  "key": "minPrice",
+                  "value": "5000"
+                },
+                {
+                  "key": "maxPrice",
+                  "value": "30000"
+                },
+                {
+                  "key": "guests",
+                  "value": "2"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "12"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"data is an array\", () => pm.expect(json.data).to.be.an(\"array\"));",
+                  "pm.test(\"meta has pagination\", () => pm.expect(json.meta).to.include.keys(\"page\", \"limit\", \"total\", \"totalPages\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get room",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/rooms/{{room_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "rooms",
+                "{{room_id}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Check availability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/rooms/{{room_id}}/availability?checkIn={{check_in}}&checkOut={{check_out}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "rooms",
+                "{{room_id}}",
+                "availability"
+              ],
+              "query": [
+                {
+                  "key": "checkIn",
+                  "value": "{{check_in}}"
+                },
+                {
+                  "key": "checkOut",
+                  "value": "{{check_out}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create room (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/rooms",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "rooms"
+              ]
+            },
+            "description": "Login as admin first. Saves room_id for the next requests.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"number\": \"R{{$randomInt}}\",\n  \"type\": \"Deluxe\",\n  \"pricePerNight\": 15000,\n  \"capacity\": 2,\n  \"facilities\": [\n    \"Wi-Fi\",\n    \"Air conditioning\",\n    \"Breakfast\"\n  ],\n  \"description\": \"Comfortable room with a city view.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"room_id\", pm.response.json().data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update room price (admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/rooms/{{room_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "rooms",
+                "{{room_id}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pricePerNight\": 16000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get image upload URL (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/rooms/{{room_id}}/images/upload-url",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "rooms",
+                "{{room_id}}",
+                "images",
+                "upload-url"
+              ]
+            },
+            "description": "The browser would now PUT the file directly to uploadUrl on S3. In Postman you can do that as a separate PUT request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fileType\": \"image/webp\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json().data;",
+                  "pm.test(\"Has presigned URL and key\", () => pm.expect(d).to.include.keys(\"uploadUrl\", \"key\"));",
+                  "pm.collectionVariables.set(\"upload_key\", d.key);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save uploaded image (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/rooms/{{room_id}}/images",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "rooms",
+                "{{room_id}}",
+                "images"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key\": \"{{upload_key}}\",\n  \"isCover\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Public reads, admin writes."
+    },
+    {
+      "name": "03 Bookings",
+      "item": [
+        {
+          "name": "Create booking (guest)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/bookings",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bookings"
+              ]
+            },
+            "description": "Login as guest first. A fresh Idempotency-Key (UUID) is generated for every send.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomId\": {{room_id}},\n  \"checkIn\": \"{{check_in}}\",\n  \"checkOut\": \"{{check_out}}\",\n  \"guests\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "const d = pm.response.json().data;",
+                  "pm.test(\"Status is pending\", () => pm.expect(d.status).to.eql(\"pending\"));",
+                  "pm.collectionVariables.set(\"booking_id\", d.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "My bookings (guest)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/my?page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bookings",
+                "my"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get booking (guest)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/{{booking_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bookings",
+                "{{booking_id}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Start payment (guest)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/{{booking_id}}/pay",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bookings",
+                "{{booking_id}}",
+                "pay"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"payment_id\", pm.response.json().data.paymentId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "All bookings (staff or admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings?status=pending&page=1&limit=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bookings"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Set status checked_in (staff or admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/bookings/{{booking_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bookings",
+                "{{booking_id}}",
+                "status"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"checked_in\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sales report (admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/reports/sales?from={{report_from}}&to={{report_to}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bookings",
+                "reports",
+                "sales"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "{{report_from}}"
+                },
+                {
+                  "key": "to",
+                  "value": "{{report_to}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Occupancy report (admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/reports/occupancy?from={{report_from}}&to={{report_to}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bookings",
+                "reports",
+                "occupancy"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "{{report_from}}"
+                },
+                {
+                  "key": "to",
+                  "value": "{{report_to}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": ""
+    },
+    {
+      "name": "04 Webhooks",
+      "item": [
+        {
+          "name": "Payment webhook (signed)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/bookings/webhooks/payment",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bookings",
+                "webhooks",
+                "payment"
+              ]
+            },
+            "description": "The pre-request script signs the raw body with HMAC-SHA256 using webhook_secret and adds x-signature.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paymentId\": \"{{payment_id}}\",\n  \"bookingId\": \"{{booking_id}}\",\n  \"status\": \"paid\",\n  \"providerRef\": \"MOCK-REF-001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const secret = pm.environment.get(\"webhook_secret\");",
+                  "const raw = pm.variables.replaceIn(pm.request.body.raw);",
+                  "const sig = CryptoJS.HmacSHA256(raw, secret).toString(CryptoJS.enc.Hex);",
+                  "pm.request.headers.upsert({ key: \"x-signature\", value: sig });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify booking is confirmed (guest)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/{{booking_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bookings",
+                "{{booking_id}}"
+              ]
+            },
+            "description": "Run as the guest who created the booking."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Booking is confirmed\", () => pm.expect(pm.response.json().data.status).to.eql(\"confirmed\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": ""
+    },
+    {
+      "name": "05 Chat and Notifications",
+      "item": [
+        {
+          "name": "Start conversation (guest)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/chat/conversations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "chat",
+                "conversations"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"conversation_id\", pm.response.json().data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List conversations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/chat/conversations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "chat",
+                "conversations"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Message history",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/chat/conversations/{{conversation_id}}/messages?limit=30",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "chat",
+                "conversations",
+                "{{conversation_id}}",
+                "messages"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "30"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Subscribe to push",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/push/subscribe",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications",
+                "push",
+                "subscribe"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"endpoint\": \"https://example.com/push/test-endpoint\",\n  \"keys\": {\n    \"p256dh\": \"test-key\",\n    \"auth\": \"test-auth\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unsubscribe from push",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/push/subscribe",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications",
+                "push",
+                "subscribe"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"endpoint\": \"https://example.com/push/test-endpoint\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Live messages and calls use Socket.IO events, not REST."
+    },
+    {
+      "name": "06 Negative tests",
+      "item": [
+        {
+          "name": "401: no login",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Clears cookies first. Log in again afterwards."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.cookies.jar().clear(pm.request.url.toString(), function (err) {});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "403: guest calls an admin route",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/rooms",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "rooms"
+              ]
+            },
+            "description": "Login as guest first.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"number\": \"X1\",\n  \"type\": \"Deluxe\",\n  \"pricePerNight\": 1000,\n  \"capacity\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "403: guest opens another guest's booking",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/{{other_booking_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bookings",
+                "{{other_booking_id}}"
+              ]
+            },
+            "description": "Set other_booking_id in the environment to a booking owned by someone else. Login as guest first."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Forbidden or hidden (403 or 404)\", () => pm.expect([403, 404]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "409: overlapping dates",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/bookings",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bookings"
+              ]
+            },
+            "description": "Same room and dates as the booking created earlier. The database exclusion constraint must reject it.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomId\": {{room_id}},\n  \"checkIn\": \"{{check_in}}\",\n  \"checkOut\": \"{{check_out}}\",\n  \"guests\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "422: weak password and bad email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"A\",\n  \"email\": \"not-an-email\",\n  \"password\": \"123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Has details\", () => pm.expect(pm.response.json().error.details).to.be.an(\"array\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "422: check-out before check-in",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/bookings",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bookings"
+              ]
+            },
+            "description": "Login as guest first.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomId\": {{room_id}},\n  \"checkIn\": \"{{check_out}}\",\n  \"checkOut\": \"{{check_in}}\",\n  \"guests\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "400: missing Idempotency-Key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/bookings",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bookings"
+              ]
+            },
+            "description": "Login as guest first.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomId\": {{room_id}},\n  \"checkIn\": \"{{check_in}}\",\n  \"checkOut\": \"{{check_out}}\",\n  \"guests\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "404: unknown room",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/rooms/999999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "rooms",
+                "999999"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "401: webhook with a bad signature",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-signature",
+                "value": "invalid"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/bookings/webhooks/payment",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bookings",
+                "webhooks",
+                "payment"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paymentId\": \"{{payment_id}}\",\n  \"bookingId\": \"{{booking_id}}\",\n  \"status\": \"paid\",\n  \"providerRef\": \"MOCK-REF-001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "429: login rate limit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Run this request about 10 times in the Collection Runner. Eventually it must return 429 with a Retry-After header.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{guest_email}}\",\n  \"password\": \"wrong-password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"401 until the limit, then 429\", () => pm.expect([401, 429]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": ""
+    },
+    {
+      "name": "07 Cleanup",
+      "item": [
+        {
+          "name": "Cancel booking (guest)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/{{booking_id}}/cancel",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bookings",
+                "{{booking_id}}",
+                "cancel"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Deactivate room (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/rooms/{{room_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "rooms",
+                "{{room_id}}"
+              ]
+            },
+            "description": "Login as admin first."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": ""
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const day = (n) => { const x = new Date(); x.setDate(x.getDate() + n); return x.toISOString().slice(0, 10); };",
+          "if (!pm.collectionVariables.get(\"check_in\")) {",
+          "  const offset = 30 + Math.floor(Math.random() * 300);",
+          "  pm.collectionVariables.set(\"check_in\", day(offset));",
+          "  pm.collectionVariables.set(\"check_out\", day(offset + 3));",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test(\"Response time is under 1500 ms\", () => pm.expect(pm.response.responseTime).to.be.below(1500));",
+          "if (pm.response.code !== 204 && pm.response.text()) {",
+          "  pm.test(\"Response is JSON\", () => pm.response.to.have.header(\"Content-Type\", /json/));",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "room_id",
+      "value": ""
+    },
+    {
+      "key": "booking_id",
+      "value": ""
+    },
+    {
+      "key": "payment_id",
+      "value": ""
+    },
+    {
+      "key": "staff_id",
+      "value": ""
+    },
+    {
+      "key": "conversation_id",
+      "value": ""
+    },
+    {
+      "key": "upload_key",
+      "value": ""
+    },
+    {
+      "key": "check_in",
+      "value": ""
+    },
+    {
+      "key": "check_out",
+      "value": ""
+    },
+    {
+      "key": "report_from",
+      "value": "2026-01-01"
+    },
+    {
+      "key": "report_to",
+      "value": "2027-12-31"
+    }
+  ]
+}
