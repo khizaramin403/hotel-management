@@ -1,4 +1,5 @@
 import { AntdDesignCheck } from "./AntdDesignCheck";
+import { UiPrimitivesCheck } from "./UiPrimitivesCheck";
 
 type ColorToken = {
   name: string;
@@ -416,6 +417,7 @@ export default function DesignCheckPage() {
       </section>
 
       <AntdDesignCheck />
+      <UiPrimitivesCheck />
     </main>
   );
 }
