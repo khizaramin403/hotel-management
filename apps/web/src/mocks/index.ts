@@ -2,6 +2,7 @@ import type { AxiosInstance } from "axios";
 import MockAdapter from "axios-mock-adapter";
 import { getMockLatencyMs } from "./db";
 import { registerAuthHandlers } from "./handlers/auth";
+import { registerBookingHandlers } from "./handlers/bookings";
 import { registerRoomHandlers } from "./handlers/rooms";
 
 export type MockModuleName = "auth" | "rooms" | "bookings" | "chat";
@@ -58,8 +59,11 @@ export function setupMocks(client: AxiosInstance): MockAdapter | null {
   if (modules.has("rooms")) {
     registerRoomHandlers(mock);
   }
+  if (modules.has("bookings")) {
+    registerBookingHandlers(mock);
+  }
 
-  // Remaining module handlers (bookings, chat) are added in later steps.
+  // Chat module handlers are added in Step 1.10.
   mock.onAny().passThrough();
 
   activeMockAdapter = mock;

@@ -1,10 +1,13 @@
 import {
+  calcTotals,
   ERROR_CODE,
+  nightsBetween,
   type Booking,
   type ErrorCode,
   type ErrorResponse,
   type Image,
   type PaginationMeta,
+  type Payment,
   type Role,
   type RoomDetail,
   type User,
@@ -13,10 +16,13 @@ import {
 import type { AxiosRequestConfig } from "axios";
 import type { z } from "zod";
 import { extractRequestId } from "@/lib/api/errors";
+import { createSeedBookings } from "./seed/bookings";
 import { buildRoomImageUrls, cloneRoomDetail, createSeedRooms } from "./seed/rooms";
 
 const DEFAULT_MOCK_LATENCY_MS = 400;
 const MOCK_ROLE_COOKIE_NAME = "mock_role";
+const PENDING_EXPIRY_MS = 15 * 60 * 1000;
+const MOCK_WEBHOOK_DELAY_MS = 2500;
 
 export interface MockUserRecord extends User {
   password: string;
@@ -44,6 +50,13 @@ const SEED_USERS: readonly MockUserRecord[] = [
     password: "Passw0rd!123",
     role: "admin",
   },
+  {
+    id: 4,
+    name: "Omar Sheikh",
+    email: "guest2@example.com",
+    password: "Passw0rd!123",
+    role: "guest",
+  },
 ];
 
 interface MockDbState {
@@ -54,6 +67,11 @@ interface MockDbState {
   nextRoomId: number;
   nextImageId: number;
   bookings: Booking[];
+  payments: Payment[];
+  nextBookingId: number;
+  nextPaymentId: number;
+  idempotencyIndex: Map<string, number>;
+  paymentTimers: Map<number, ReturnType<typeof setTimeout>>;
 }
 
 function getMaxImageId(rooms: readonly RoomDetail[]): number {
@@ -68,16 +86,23 @@ function getMaxImageId(rooms: readonly RoomDetail[]): number {
   return maxId;
 }
 
+const initialSeedUsers = SEED_USERS.map((user) => ({ ...user }));
 const initialSeedRooms = createSeedRooms();
+const initialBookingsBundle = createSeedBookings(initialSeedUsers, initialSeedRooms);
 
 const dbState: MockDbState = {
-  users: SEED_USERS.map((user) => ({ ...user })),
-  nextUserId: 4,
+  users: initialSeedUsers,
+  nextUserId: 5,
   currentUserId: null,
   rooms: initialSeedRooms,
   nextRoomId: initialSeedRooms.length + 1,
   nextImageId: getMaxImageId(initialSeedRooms) + 1,
-  bookings: [],
+  bookings: initialBookingsBundle.bookings,
+  payments: initialBookingsBundle.payments,
+  nextBookingId: initialBookingsBundle.nextBookingId,
+  nextPaymentId: initialBookingsBundle.nextPaymentId,
+  idempotencyIndex: new Map(),
+  paymentTimers: new Map(),
 };
 
 export function getMockLatencyMs(): number {
@@ -122,15 +147,30 @@ export function readMockRoleCookie(): Role | null {
   return null;
 }
 
+export function clearMockPaymentTimers(): void {
+  for (const timer of dbState.paymentTimers.values()) {
+    clearTimeout(timer);
+  }
+  dbState.paymentTimers.clear();
+}
+
 export function resetMockDb(): void {
+  clearMockPaymentTimers();
+  const freshUsers = SEED_USERS.map((user) => ({ ...user }));
   const freshRooms = createSeedRooms();
-  dbState.users = SEED_USERS.map((user) => ({ ...user }));
-  dbState.nextUserId = 4;
+  const freshBookings = createSeedBookings(freshUsers, freshRooms);
+
+  dbState.users = freshUsers;
+  dbState.nextUserId = 5;
   dbState.currentUserId = null;
   dbState.rooms = freshRooms;
   dbState.nextRoomId = freshRooms.length + 1;
   dbState.nextImageId = getMaxImageId(freshRooms) + 1;
-  dbState.bookings = [];
+  dbState.bookings = freshBookings.bookings;
+  dbState.payments = freshBookings.payments;
+  dbState.nextBookingId = freshBookings.nextBookingId;
+  dbState.nextPaymentId = freshBookings.nextPaymentId;
+  dbState.idempotencyIndex.clear();
   clearMockRoleCookie();
 }
 
@@ -223,19 +263,26 @@ export function requireAuthenticated(
   return { user };
 }
 
-export function requireAdmin(
+export function requireRole(
   config: AxiosRequestConfig,
+  allowedRoles: readonly Role[],
 ): { user: MockUserRecord } | { error: ReturnType<typeof mockError> } {
   const auth = requireAuthenticated(config);
   if ("error" in auth) {
     return auth;
   }
-  if (auth.user.role !== "admin") {
+  if (!allowedRoles.includes(auth.user.role)) {
     return {
       error: mockError(403, ERROR_CODE.FORBIDDEN, "Access denied", config),
     };
   }
   return auth;
+}
+
+export function requireAdmin(
+  config: AxiosRequestConfig,
+): { user: MockUserRecord } | { error: ReturnType<typeof mockError> } {
+  return requireRole(config, ["admin"]);
 }
 
 export function getMockRooms(): RoomDetail[] {
@@ -330,12 +377,96 @@ export function deleteMockRoomImage(roomId: number, imageId: number): boolean {
   return true;
 }
 
+export function cloneBooking(booking: Booking): Booking {
+  return {
+    ...booking,
+    payment: booking.payment ? { ...booking.payment } : null,
+  };
+}
+
+export function expireStalePendingBookings(nowMs: number = Date.now()): void {
+  for (const booking of dbState.bookings) {
+    if (booking.status !== "pending" || booking.expiresAt === null) {
+      continue;
+    }
+    const expiresMs = Date.parse(booking.expiresAt);
+    if (!Number.isNaN(expiresMs) && expiresMs <= nowMs) {
+      booking.status = "cancelled";
+      booking.expiresAt = null;
+      if (booking.payment && booking.payment.status === "pending") {
+        const payment = dbState.payments.find((p) => p.id === booking.payment?.id);
+        if (payment) {
+          payment.status = "failed";
+        }
+        booking.payment = { id: booking.payment.id, status: "failed" };
+      }
+    }
+  }
+}
+
 export function getMockBookings(): Booking[] {
+  expireStalePendingBookings();
   return dbState.bookings;
+}
+
+export function findMockBookingById(id: number): Booking | undefined {
+  expireStalePendingBookings();
+  return dbState.bookings.find((booking) => booking.id === id);
+}
+
+export function findMockBookingByIdempotency(
+  userId: number,
+  idempotencyKey: string,
+): Booking | undefined {
+  expireStalePendingBookings();
+  const bookingId = dbState.idempotencyIndex.get(`${userId}:${idempotencyKey}`);
+  if (bookingId === undefined) {
+    return undefined;
+  }
+  return dbState.bookings.find((booking) => booking.id === bookingId);
 }
 
 export function addMockBooking(booking: Booking): void {
   dbState.bookings.push(booking);
+}
+
+export function createMockBooking(params: {
+  user: MockUserRecord;
+  room: RoomDetail;
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+  idempotencyKey: string;
+  nowMs?: number;
+}): Booking {
+  const nowMs = params.nowMs ?? Date.now();
+  const nights = nightsBetween(params.checkIn, params.checkOut);
+  const { subtotal, taxAmount, totalPrice } = calcTotals(nights, params.room.pricePerNight);
+
+  const created: Booking = {
+    id: dbState.nextBookingId,
+    userId: params.user.id,
+    guestName: params.user.name,
+    roomId: params.room.id,
+    roomNumber: params.room.number,
+    roomType: params.room.type,
+    checkIn: params.checkIn,
+    checkOut: params.checkOut,
+    guests: params.guests,
+    nights,
+    subtotal,
+    taxAmount,
+    totalPrice,
+    status: "pending",
+    expiresAt: new Date(nowMs + PENDING_EXPIRY_MS).toISOString(),
+    createdAt: new Date(nowMs).toISOString(),
+    payment: null,
+  };
+
+  dbState.nextBookingId += 1;
+  dbState.bookings.push(created);
+  dbState.idempotencyIndex.set(`${params.user.id}:${params.idempotencyKey}`, created.id);
+  return cloneBooking(created);
 }
 
 export function isRoomAvailableForDates(
@@ -343,6 +474,7 @@ export function isRoomAvailableForDates(
   checkIn: string,
   checkOut: string,
 ): boolean {
+  expireStalePendingBookings();
   for (const booking of dbState.bookings) {
     if (booking.roomId !== roomId || booking.status === "cancelled") {
       continue;
@@ -352,6 +484,88 @@ export function isRoomAvailableForDates(
     }
   }
   return true;
+}
+
+export function findMockPaymentById(paymentId: number): Payment | undefined {
+  return dbState.payments.find((payment) => payment.id === paymentId);
+}
+
+export function applyPaymentOutcome(
+  paymentId: number,
+  status: "paid" | "failed",
+  providerRefPrefix: string,
+): boolean {
+  const payment = findMockPaymentById(paymentId);
+  if (!payment) {
+    return false;
+  }
+
+  const pendingTimer = dbState.paymentTimers.get(paymentId);
+  if (pendingTimer) {
+    clearTimeout(pendingTimer);
+    dbState.paymentTimers.delete(paymentId);
+  }
+
+  if (payment.status !== "pending") {
+    return true;
+  }
+
+  payment.status = status;
+  payment.providerRef = `${providerRefPrefix}_${payment.id}`;
+
+  const booking = dbState.bookings.find((b) => b.id === payment.bookingId);
+  if (booking) {
+    if (status === "paid" && booking.status === "pending") {
+      booking.status = "confirmed";
+      booking.expiresAt = null;
+    }
+    booking.payment = { id: payment.id, status: payment.status };
+  }
+
+  return true;
+}
+
+export function startMockBookingPayment(booking: Booking): Payment {
+  const payment: Payment = {
+    id: dbState.nextPaymentId,
+    bookingId: booking.id,
+    amount: booking.totalPrice,
+    status: "pending",
+    providerRef: null,
+  };
+  dbState.nextPaymentId += 1;
+  dbState.payments.push(payment);
+  booking.payment = { id: payment.id, status: "pending" };
+
+  const timer = setTimeout(() => {
+    dbState.paymentTimers.delete(payment.id);
+    expireStalePendingBookings();
+    applyPaymentOutcome(payment.id, "paid", "mock_webhook");
+  }, MOCK_WEBHOOK_DELAY_MS);
+  dbState.paymentTimers.set(payment.id, timer);
+
+  return { ...payment };
+}
+
+export function markMockBookingPaidAndRefundIfPaid(booking: Booking): void {
+  if (booking.payment && booking.payment.status === "paid") {
+    const payment = findMockPaymentById(booking.payment.id);
+    if (payment) {
+      payment.status = "refunded";
+    }
+    booking.payment = { id: booking.payment.id, status: "refunded" };
+  } else if (booking.payment && booking.payment.status === "pending") {
+    const timer = dbState.paymentTimers.get(booking.payment.id);
+    if (timer) {
+      clearTimeout(timer);
+      dbState.paymentTimers.delete(booking.payment.id);
+    }
+    const payment = findMockPaymentById(booking.payment.id);
+    if (payment) {
+      payment.status = "failed";
+    }
+    booking.payment = { id: booking.payment.id, status: "failed" };
+  }
 }
 
 export function successEnvelope<T>(data: T): { success: true; data: T } {
