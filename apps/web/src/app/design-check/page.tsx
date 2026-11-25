@@ -1,3 +1,5 @@
+import { AntdDesignCheck } from "./AntdDesignCheck";
+
 type ColorToken = {
   name: string;
   hex: string;
@@ -412,6 +414,8 @@ export default function DesignCheckPage() {
           ))}
         </div>
       </section>
+
+      <AntdDesignCheck />
     </main>
   );
 }
