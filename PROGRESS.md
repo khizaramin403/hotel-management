@@ -14,3 +14,4 @@ Step list and prompts: PROMPTS.md and the PHASE*_PROMPTS.md files.
 2026-11-25 | STEP 1.3 | Installed Ant Design v5 with React 19 patch, AntdProvider theme aligned to DESIGN.md, and Ant Design /design-check showcase
 2026-11-25 | STEP 1.4 | Created shared UI primitives, image URL and en-GB format helpers, /design-check showcase, and Vitest unit tests
 2026-11-25 | STEP 1.5 | Configured Redux Toolkit store and 5 slices with narrow selectors, TanStack Query AppProviders, and Vitest RTL jsdom tests
+2026-11-25 | STEP 1.6 | Built typed Axios API client with refresh queue, ApiClientError normalizer, REST endpoints, queryKeys, and mocked adapter tests
