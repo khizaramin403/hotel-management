@@ -21,3 +21,4 @@ Step list and prompts: PROMPTS.md and the PHASE*_PROMPTS.md files.
 2026-11-25 | STEP 1.10 | Created PublicHeader, DashboardShell, single-source navigation config, client RoleGuard, proxy route protection, error/loading boundaries, placeholder PageHeaders, and tests
 2026-11-25 | STEP 1.11 | Built /login and /register split layouts with React Hook Form Zod validation, role-aware next redirects, header logout cache clear, and mock auth tests
 2026-11-25 | STEP 1.12 | Reviewed Phase 1 against DESIGN.md, DECISIONS.md, and PERFORMANCE.md, fixed mobile 44px touch targets, overflow-x clip, Suspense Skeletons, ErrorState reuse, and a11y gaps, and verified all lint, typecheck, test, and build checks
+2026-11-26 | STEP 2.1 | Built RoomCard, RoomCardSkeleton, responsive RoomGrid, and useRoomsQuery hook with temporary home page loading, empty, and error states plus unit tests
