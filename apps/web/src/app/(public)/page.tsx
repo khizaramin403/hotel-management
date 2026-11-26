@@ -1,12 +1,11 @@
 import { PageHeader } from "@/components/ui";
+import { HomeRoomsSection } from "@/features/rooms";
 
 export default function HomePage() {
   return (
-    <section className="mx-auto max-w-container px-4 py-8 md:px-6">
-      <PageHeader title="Available rooms" variant="h1" />
-      <p className="mt-4 font-sans text-[14px] leading-[22px] text-muted">
-        Coming in the next steps.
-      </p>
+    <section className="mx-auto max-w-container px-4 py-8 lg:px-6">
+      <PageHeader title="Available rooms" variant="h1" className="mb-6" />
+      <HomeRoomsSection />
     </section>
   );
 }
