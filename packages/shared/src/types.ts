@@ -42,6 +42,7 @@ import {
   setStatusSchema,
   simulatePaymentSchema,
   staffQuerySchema,
+  updateRoomImageSchema,
   updateRoomSchema,
   uploadUrlSchema,
   userSchema,
@@ -103,6 +104,7 @@ export type RoomsQuery = z.infer<typeof roomsQuerySchema>;
 export type AvailabilityQuery = z.infer<typeof availabilityQuerySchema>;
 export type UploadUrlInput = z.infer<typeof uploadUrlSchema>;
 export type SaveImageInput = z.infer<typeof saveImageSchema>;
+export type UpdateRoomImageInput = z.infer<typeof updateRoomImageSchema>;
 
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
 export type GuestDetailsInput = z.infer<typeof guestDetailsSchema>;

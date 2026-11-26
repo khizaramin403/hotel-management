@@ -355,6 +355,25 @@ export function addMockRoomImage(roomId: number, key: string, isCover: boolean):
   return { ...image, urls: { ...image.urls } };
 }
 
+export function setMockRoomCoverImage(roomId: number, imageId: number): Image | null {
+  const room = findMockRoomById(roomId);
+  if (!room) {
+    return null;
+  }
+
+  const target = room.images.find((img) => img.id === imageId);
+  if (!target) {
+    return null;
+  }
+
+  for (const img of room.images) {
+    img.isCover = img.id === imageId;
+  }
+  room.coverImage = target;
+
+  return { ...target, urls: { ...target.urls } };
+}
+
 export function deleteMockRoomImage(roomId: number, imageId: number): boolean {
   const room = findMockRoomById(roomId);
   if (!room) {

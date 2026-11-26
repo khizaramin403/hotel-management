@@ -87,3 +87,7 @@ export const saveImageSchema = z.object({
   key: z.string().trim().min(1, "Image key is required"),
   isCover: z.boolean(),
 });
+
+export const updateRoomImageSchema = z.object({
+  isCover: z.literal(true),
+});

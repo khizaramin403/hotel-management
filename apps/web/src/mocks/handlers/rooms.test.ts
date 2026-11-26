@@ -10,6 +10,7 @@ import {
   listRooms,
   login,
   saveRoomImage,
+  setRoomImageCover,
   updateRoom,
 } from "@/lib/api";
 import { resetMockInitForTests } from "@/lib/api/client";
@@ -304,7 +305,21 @@ describe("mock rooms module", () => {
     expect(savedImg.isCover).toBe(true);
     expect(savedImg.urls.sm).toBe(`/images/${upload.key}`);
 
+    const secondUpload = await createRoomImageUploadUrl(created.id, { fileType: "image/jpeg" });
+    const secondImg = await saveRoomImage(created.id, { key: secondUpload.key, isCover: false });
+    expect(secondImg.isCover).toBe(false);
+
+    const promoted = await setRoomImageCover(created.id, secondImg.id);
+    expect(promoted.isCover).toBe(true);
+    expect((await getRoom(created.id)).coverImage?.id).toBe(secondImg.id);
+
+    await expect(setRoomImageCover(created.id, 99999)).rejects.toMatchObject({
+      status: 404,
+      code: "NOT_FOUND",
+    });
+
     await deleteRoomImage(created.id, savedImg.id);
+    await deleteRoomImage(created.id, secondImg.id);
     const afterImgDelete = await getRoom(created.id);
     expect(afterImgDelete.images).toHaveLength(0);
     expect(afterImgDelete.coverImage).toBeNull();

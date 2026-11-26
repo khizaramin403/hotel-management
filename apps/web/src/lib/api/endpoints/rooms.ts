@@ -13,6 +13,7 @@ import {
   type RoomDetail,
   type RoomsQuery,
   type SaveImageInput,
+  type UpdateRoomImageInput,
   type UpdateRoomInput,
   type UploadUrlInput,
 } from "@hotel/shared";
@@ -102,6 +103,20 @@ export async function createRoomImageUploadUrl(
 export async function saveRoomImage(id: number, input: SaveImageInput): Promise<Image> {
   const response = await apiClient.post(`/rooms/${id}/images`, input);
   const parsed = parseApiResponse(imageEnvelopeSchema, response.data, `POST /rooms/${id}/images`);
+  return parsed.data;
+}
+
+export async function setRoomImageCover(
+  id: number,
+  imageId: number,
+  input: UpdateRoomImageInput = { isCover: true },
+): Promise<Image> {
+  const response = await apiClient.patch(`/rooms/${id}/images/${imageId}`, input);
+  const parsed = parseApiResponse(
+    imageEnvelopeSchema,
+    response.data,
+    `PATCH /rooms/${id}/images/${imageId}`,
+  );
   return parsed.data;
 }
 

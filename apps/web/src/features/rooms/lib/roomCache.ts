@@ -1,4 +1,4 @@
-import type { Room, RoomDetail, RoomsQuery } from "@hotel/shared";
+import type { Image, Room, RoomDetail, RoomsQuery } from "@hotel/shared";
 import type { QueryClient } from "@tanstack/react-query";
 import { queryKeys, type RoomsListResult } from "@/lib/api";
 
@@ -214,5 +214,159 @@ export function upsertRoomInCache(
         },
       };
     });
+  }
+}
+
+function syncRoomSummaryCoverInListCaches(
+  queryClient: QueryClient,
+  roomId: number,
+  coverImage: Image | null,
+): void {
+  const listQueries = queryClient.getQueryCache().findAll({
+    queryKey: queryKeys.rooms.lists(),
+  });
+
+  for (const query of listQueries) {
+    queryClient.setQueryData<RoomsListResult | undefined>(query.queryKey, (previous) => {
+      if (!previous) {
+        return previous;
+      }
+      const hasRoom = previous.data.some((item) => item.id === roomId);
+      if (!hasRoom) {
+        return previous;
+      }
+      return {
+        ...previous,
+        data: previous.data.map((item) =>
+          item.id === roomId
+            ? {
+                ...item,
+                coverImage: coverImage ? { ...coverImage, urls: { ...coverImage.urls } } : null,
+              }
+            : item,
+        ),
+      };
+    });
+  }
+}
+
+function withResolvedCover(images: readonly Image[]): {
+  images: Image[];
+  coverImage: Image | null;
+} {
+  const normalized = images.map((img, idx) => ({
+    ...img,
+    sortOrder: idx,
+    urls: { ...img.urls },
+  }));
+  if (normalized.length > 0 && !normalized.some((img) => img.isCover)) {
+    normalized[0] = { ...normalized[0]!, isCover: true };
+  }
+  const coverImage = normalized.find((img) => img.isCover) ?? normalized[0] ?? null;
+  return { images: normalized, coverImage };
+}
+
+export function addRoomImageInCache(
+  queryClient: QueryClient,
+  roomId: number,
+  addedImage: Image,
+  localObjectUrl?: string | null,
+): void {
+  const nextImage: Image = localObjectUrl
+    ? {
+        ...addedImage,
+        urls: { sm: localObjectUrl, md: localObjectUrl, lg: localObjectUrl },
+      }
+    : addedImage;
+
+  let resolvedCover: Image | null = nextImage;
+
+  queryClient.setQueryData<RoomDetail | undefined>(queryKeys.rooms.detail(roomId), (prev) => {
+    if (!prev) {
+      return prev;
+    }
+
+    const baseImages = prev.images
+      .filter((img) => img.id !== nextImage.id)
+      .map((img) => (nextImage.isCover ? { ...img, isCover: false } : img));
+
+    const { images, coverImage } = withResolvedCover([...baseImages, nextImage]);
+    resolvedCover = coverImage;
+    return {
+      ...prev,
+      images,
+      coverImage,
+    };
+  });
+
+  const updatedDetail = queryClient.getQueryData<RoomDetail>(queryKeys.rooms.detail(roomId));
+  if (updatedDetail) {
+    syncRoomSummaryCoverInListCaches(queryClient, roomId, resolvedCover);
+  } else if (nextImage.isCover) {
+    syncRoomSummaryCoverInListCaches(queryClient, roomId, nextImage);
+  }
+}
+
+export function setRoomCoverImageInCache(
+  queryClient: QueryClient,
+  roomId: number,
+  updatedCoverImage: Image,
+): void {
+  let resolvedCover: Image | null = updatedCoverImage;
+
+  queryClient.setQueryData<RoomDetail | undefined>(queryKeys.rooms.detail(roomId), (prev) => {
+    if (!prev) {
+      return prev;
+    }
+
+    const updatedImages = prev.images.map((img) => {
+      if (img.id !== updatedCoverImage.id) {
+        return { ...img, isCover: false };
+      }
+      const keepBlobPreview = img.urls.sm.startsWith("blob:");
+      return {
+        ...updatedCoverImage,
+        isCover: true,
+        urls: keepBlobPreview ? { ...img.urls } : { ...updatedCoverImage.urls },
+      };
+    });
+
+    const { images, coverImage } = withResolvedCover(updatedImages);
+    resolvedCover = coverImage;
+    return {
+      ...prev,
+      images,
+      coverImage,
+    };
+  });
+
+  syncRoomSummaryCoverInListCaches(queryClient, roomId, resolvedCover);
+}
+
+export function removeRoomImageInCache(
+  queryClient: QueryClient,
+  roomId: number,
+  imageId: number,
+): void {
+  let resolvedCover: Image | null = null;
+  let updatedDetail = false;
+
+  queryClient.setQueryData<RoomDetail | undefined>(queryKeys.rooms.detail(roomId), (prev) => {
+    if (!prev) {
+      return prev;
+    }
+    updatedDetail = true;
+    const remaining = prev.images.filter((img) => img.id !== imageId);
+    const { images, coverImage } = withResolvedCover(remaining);
+    resolvedCover = coverImage;
+    return {
+      ...prev,
+      images,
+      coverImage,
+    };
+  });
+
+  if (updatedDetail) {
+    syncRoomSummaryCoverInListCaches(queryClient, roomId, resolvedCover);
   }
 }

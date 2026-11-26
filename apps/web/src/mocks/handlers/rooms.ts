@@ -7,6 +7,7 @@ import {
   nightsBetween,
   roomsQuerySchema,
   saveImageSchema,
+  updateRoomImageSchema,
   updateRoomSchema,
   uploadUrlSchema,
 } from "@hotel/shared";
@@ -25,6 +26,7 @@ import {
   parseJsonBody,
   requireAdmin,
   responseHeadersForRequest,
+  setMockRoomCoverImage,
   successEnvelope,
   zodIssuesToDetails,
 } from "../db";
@@ -256,6 +258,48 @@ export function registerRoomHandlers(mock: MockAdapter): void {
     if (updates.isActive !== undefined) room.isActive = updates.isActive;
 
     return [200, successEnvelope(cloneRoomDetail(room)), responseHeadersForRequest(config)];
+  });
+
+  mock.onPatch(/\/rooms\/([^/?]+)\/images\/([^/?]+)$/).reply((config) => {
+    const auth = requireAdmin(config);
+    if ("error" in auth) {
+      return auth.error;
+    }
+
+    const match = /\/rooms\/([^/?]+)\/images\/([^/?]+)$/.exec(getPathname(config.url));
+    const parsedRoomId = idParamSchema.safeParse({ id: match?.[1] });
+    const parsedImageId = idParamSchema.safeParse({ id: match?.[2] });
+    if (!parsedRoomId.success || !parsedImageId.success) {
+      return mockError(422, ERROR_CODE.VALIDATION_ERROR, "Invalid room or image id", config);
+    }
+
+    const body = parseJsonBody(config.data);
+    if (body === null) {
+      return mockError(400, ERROR_CODE.BAD_REQUEST, "Malformed JSON", config);
+    }
+
+    const parsed = updateRoomImageSchema.safeParse(body);
+    if (!parsed.success) {
+      return mockError(
+        422,
+        ERROR_CODE.VALIDATION_ERROR,
+        "Invalid image update",
+        config,
+        zodIssuesToDetails(parsed.error),
+      );
+    }
+
+    const room = findMockRoomById(parsedRoomId.data.id);
+    if (!room) {
+      return mockError(404, ERROR_CODE.NOT_FOUND, "Room not found", config);
+    }
+
+    const updated = setMockRoomCoverImage(room.id, parsedImageId.data.id);
+    if (!updated) {
+      return mockError(404, ERROR_CODE.NOT_FOUND, "Image not found", config);
+    }
+
+    return [200, successEnvelope(updated), responseHeadersForRequest(config)];
   });
 
   mock.onDelete(/\/rooms\/([^/?]+)\/images\/([^/?]+)$/).reply((config) => {

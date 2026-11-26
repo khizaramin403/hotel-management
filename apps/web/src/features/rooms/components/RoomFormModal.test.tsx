@@ -103,12 +103,13 @@ describe("RoomFormModal", () => {
 
     renderRoomFormModal({ mode: "create" });
 
-    // Modal width is 520 and Active Switch is edit-only
+    // Modal width is 520, Active Switch is edit-only, and create mode shows photo helper copy
     const dialog = screen.getByRole("dialog");
     expect(dialog.textContent).toContain("Add room");
     const modalRoot = dialog.closest(".ant-modal") as HTMLElement | null;
     expect(modalRoot?.style.width).toBe("520px");
     expect(screen.queryByRole("switch")).toBeNull();
+    expect(screen.getByText("Save the room first, then add photos.")).toBeDefined();
 
     // Verify all 7 facility suggestions exist in the tags Select
     fireEvent.mouseDown(screen.getByLabelText("Facilities (optional)"));

@@ -87,6 +87,7 @@ Login rate limit: 10 attempts per 15 minutes per IP+email, then 429.
 | DELETE | /rooms/:id | admin | - | 204 (sets isActive=false) |
 | POST | /rooms/:id/images/upload-url | admin | `{ fileType: "image/jpeg" \| "image/png" \| "image/webp" }` | 200 `{ uploadUrl, key }` (valid 5 min, max 5 MB) |
 | POST | /rooms/:id/images | admin | `{ key, isCover }` | 201 `Image` |
+| PATCH | /rooms/:id/images/:imageId | admin | `{ isCover: true }` | 200 `Image` |
 | DELETE | /rooms/:id/images/:imageId | admin | - | 204 |
 Inactive rooms are hidden from public endpoints (404) and visible to admin with `?includeInactive=true` on the list (optionally filtered by `?isActive=true|false` and `?q=<number>`).
 Internal (header `x-internal-key`): `GET /internal/rooms/:id` -> `Room`; `GET /internal/rooms/count` -> `{ activeRooms: number }`.

@@ -17,6 +17,7 @@ import { applyServerValidationDetails } from "@/components/auth/authFormErrors";
 import { ErrorState } from "@/components/ui";
 import { createRoom, normalizeApiError, updateRoom } from "@/lib/api";
 import { useRoomQuery } from "../hooks/useRoomQuery";
+import { ImageUploader } from "./ImageUploader";
 import { upsertRoomInCache } from "../lib/roomCache";
 import {
   buildCreateRoomPayload,
@@ -177,11 +178,11 @@ export function RoomFormModal({ mode, onClose }: RoomFormModalProps) {
       return;
     }
 
-    if (hydratedRoomIdRef.current !== roomDetail.id || !isDirty) {
+    if (hydratedRoomIdRef.current !== roomDetail.id) {
       hydratedRoomIdRef.current = roomDetail.id;
       reset(toEditFormValues(roomDetail));
     }
-  }, [isDirty, isEditMode, reset, roomDetail]);
+  }, [isEditMode, reset, roomDetail]);
 
   const isLoadingEditDetail = isEditMode && isDetailPending && !roomDetail;
   const isDetailLoadFailure = isEditMode && isDetailError && !roomDetail;
@@ -494,6 +495,13 @@ export function RoomFormModal({ mode, onClose }: RoomFormModalProps) {
               message={errors.description?.message}
             />
           </div>
+
+          <ImageUploader
+            mode={isEditMode ? "edit" : "create"}
+            roomId={isEditMode ? editRoomId : undefined}
+            roomNumber={roomDetail?.number ?? editRoom?.number}
+            images={roomDetail?.images ?? []}
+          />
 
           {isEditMode ? (
             <div className="flex items-center justify-between gap-4 rounded-md border border-line bg-canvas px-4 py-3">

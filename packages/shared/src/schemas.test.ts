@@ -13,6 +13,7 @@ import {
   roomSchema,
   roomsQuerySchema,
   sendMessageSchema,
+  updateRoomImageSchema,
   updateRoomSchema,
 } from "./schemas/index";
 
@@ -255,10 +256,12 @@ describe("createRoomSchema & updateRoomSchema", () => {
     ).toBe(false);
   });
 
-  it("supports partial updates with isActive", () => {
+  it("supports partial updates with isActive and room cover image updates", () => {
     expect(updateRoomSchema.safeParse({ pricePerNight: 18000, isActive: false }).success).toBe(
       true,
     );
+    expect(updateRoomImageSchema.safeParse({ isCover: true }).success).toBe(true);
+    expect(updateRoomImageSchema.safeParse({ isCover: false }).success).toBe(false);
   });
 });
 
