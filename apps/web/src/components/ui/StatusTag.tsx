@@ -5,7 +5,7 @@ import { getStatusTagStyle, type TagStatus } from "./statusTagMap";
 
 export interface StatusTagProps {
   status: TagStatus;
-  kind?: "booking" | "payment";
+  kind?: "booking" | "payment" | "room";
   className?: string;
 }
 

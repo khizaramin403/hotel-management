@@ -1,12 +1,10 @@
-import { PageHeader } from "@/components/ui";
+import { Suspense } from "react";
+import { AdminRoomsSkeleton, AdminRoomsView } from "@/features/rooms";
 
 export default function DashboardRoomsPage() {
   return (
-    <section>
-      <PageHeader title="Rooms" variant="h3" />
-      <p className="mt-4 font-sans text-[14px] leading-[22px] text-muted">
-        Coming in the next steps.
-      </p>
-    </section>
+    <Suspense fallback={<AdminRoomsSkeleton />}>
+      <AdminRoomsView />
+    </Suspense>
   );
 }

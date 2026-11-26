@@ -37,7 +37,12 @@ export const roomsQuerySchema = z
     checkIn: dateStringSchema.optional(),
     checkOut: dateStringSchema.optional(),
     sort: z.enum(["price_asc", "price_desc", "number"]).optional(),
+    q: z.preprocess(
+      (val) => (val === "" ? undefined : val),
+      z.string().trim().min(1).max(50).optional(),
+    ),
     includeInactive: queryBooleanSchema.optional(),
+    isActive: queryBooleanSchema.optional(),
     page: z.coerce.number().int().min(1).default(1),
     limit: z.coerce.number().int().min(1).max(MAX_PAGE_LIMIT).default(12),
   })

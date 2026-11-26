@@ -79,7 +79,7 @@ Login rate limit: 10 attempts per 15 minutes per IP+email, then 429.
 ## 4. Room Service (3002)
 | Method | Path | Access | Body / query | Success |
 |---|---|---|---|---|
-| GET | /rooms | public | `type, minPrice, maxPrice, guests, checkIn, checkOut, sort (price_asc \| price_desc \| number), page, limit` (default limit 12) | 200 `Room[]` + meta. With dates, unavailable rooms are excluded |
+| GET | /rooms | public | `type, minPrice, maxPrice, guests, checkIn, checkOut, sort (price_asc \| price_desc \| number), q? (room number), includeInactive?, isActive? (admin with includeInactive=true), page, limit` (default limit 12) | 200 `Room[]` + meta. With dates, unavailable rooms are excluded |
 | GET | /rooms/:id | public | - | 200 `RoomDetail` |
 | GET | /rooms/:id/availability | public | `checkIn, checkOut` | 200 `{ available: boolean, nights, subtotal, taxAmount, totalPrice }` |
 | POST | /rooms | admin | `{ number, type, pricePerNight, capacity, facilities[], description }` | 201 `RoomDetail`. 409 ROOM_NUMBER_TAKEN |
@@ -88,7 +88,7 @@ Login rate limit: 10 attempts per 15 minutes per IP+email, then 429.
 | POST | /rooms/:id/images/upload-url | admin | `{ fileType: "image/jpeg" \| "image/png" \| "image/webp" }` | 200 `{ uploadUrl, key }` (valid 5 min, max 5 MB) |
 | POST | /rooms/:id/images | admin | `{ key, isCover }` | 201 `Image` |
 | DELETE | /rooms/:id/images/:imageId | admin | - | 204 |
-Inactive rooms are hidden from public endpoints (404) and visible to admin with `?includeInactive=true` on the list.
+Inactive rooms are hidden from public endpoints (404) and visible to admin with `?includeInactive=true` on the list (optionally filtered by `?isActive=true|false` and `?q=<number>`).
 Internal (header `x-internal-key`): `GET /internal/rooms/:id` -> `Room`; `GET /internal/rooms/count` -> `{ activeRooms: number }`.
 
 ## 5. Booking Service (3003)

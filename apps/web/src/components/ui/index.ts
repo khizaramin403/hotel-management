@@ -9,7 +9,9 @@ export {
   BOOKING_STATUS_TAG_MAP,
   getStatusTagStyle,
   PAYMENT_STATUS_TAG_MAP,
+  ROOM_STATUS_TAG_MAP,
   STATUS_TAG_MAP,
+  type RoomStatusTag,
   type StatusTagStyle,
   type TagStatus,
 } from "./statusTagMap";

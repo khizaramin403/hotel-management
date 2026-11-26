@@ -74,4 +74,19 @@ describe("StatusTag mapping", () => {
       dotClass: "bg-neutral-400",
     });
   });
+
+  it("maps active and inactive room statuses to Tailwind token classes", () => {
+    expect(getStatusTagStyle("active", "room")).toEqual({
+      label: "Active",
+      bgClass: "bg-success-bg",
+      textClass: "text-success-text",
+      dotClass: "bg-success",
+    });
+    expect(getStatusTagStyle("inactive", "room")).toEqual({
+      label: "Inactive",
+      bgClass: "bg-neutral-100",
+      textClass: "text-neutral-700",
+      dotClass: "bg-neutral-400",
+    });
+  });
 });

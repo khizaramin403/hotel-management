@@ -265,11 +265,15 @@ describe("createRoomSchema & updateRoomSchema", () => {
 describe("additional contract schemas", () => {
   it("parses query params and comma-separated booking statuses", () => {
     const rooms = roomsQuerySchema.parse({
-      includeInactive: "false",
+      q: " 201 ",
+      includeInactive: "true",
+      isActive: "false",
       page: "2",
       limit: "20",
     });
-    expect(rooms.includeInactive).toBe(false);
+    expect(rooms.q).toBe("201");
+    expect(rooms.includeInactive).toBe(true);
+    expect(rooms.isActive).toBe(false);
     expect(rooms.page).toBe(2);
     expect(rooms.limit).toBe(20);
 

@@ -173,6 +173,20 @@ h3 {
   padding: 10px 12px;
 }
 
+.dashboard-rooms-table .ant-table-thead > tr > th.ant-table-cell {
+  height: 48px;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: 0.02em;
+}
+
+.dashboard-rooms-table .ant-table-tbody > tr > td.ant-table-cell {
+  height: 64px;
+  padding: 12px 16px;
+}
+
 @media (max-width: 768px) {
   .ant-btn {
     min-height: 44px;

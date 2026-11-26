@@ -22,7 +22,9 @@ function normalizeRoomsParams(params: RoomsQueryParams = {}): RoomsQueryParams {
   if (params.checkIn !== undefined) normalized.checkIn = params.checkIn;
   if (params.checkOut !== undefined) normalized.checkOut = params.checkOut;
   if (params.sort !== undefined) normalized.sort = params.sort;
+  if (params.q !== undefined) normalized.q = params.q;
   if (params.includeInactive !== undefined) normalized.includeInactive = params.includeInactive;
+  if (params.isActive !== undefined) normalized.isActive = params.isActive;
 
   return normalized;
 }

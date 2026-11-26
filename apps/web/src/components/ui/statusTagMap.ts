@@ -1,6 +1,7 @@
 import type { BookingStatus, PaymentStatus } from "@hotel/shared";
 
-export type TagStatus = BookingStatus | PaymentStatus;
+export type RoomStatusTag = "active" | "inactive";
+export type TagStatus = BookingStatus | PaymentStatus | RoomStatusTag;
 
 export interface StatusTagStyle {
   label: string;
@@ -59,6 +60,16 @@ const REFUNDED_STYLE: StatusTagStyle = {
   label: "Refunded",
 };
 
+const ACTIVE_STYLE: StatusTagStyle = {
+  ...CONFIRMED_STYLE,
+  label: "Active",
+};
+
+const INACTIVE_STYLE: StatusTagStyle = {
+  ...CHECKED_OUT_STYLE,
+  label: "Inactive",
+};
+
 export const BOOKING_STATUS_TAG_MAP: Record<BookingStatus, StatusTagStyle> = {
   pending: PENDING_STYLE,
   confirmed: CONFIRMED_STYLE,
@@ -74,18 +85,30 @@ export const PAYMENT_STATUS_TAG_MAP: Record<PaymentStatus, StatusTagStyle> = {
   refunded: REFUNDED_STYLE,
 };
 
+export const ROOM_STATUS_TAG_MAP: Record<RoomStatusTag, StatusTagStyle> = {
+  active: ACTIVE_STYLE,
+  inactive: INACTIVE_STYLE,
+};
+
 export const STATUS_TAG_MAP: Record<TagStatus, StatusTagStyle> = {
   ...BOOKING_STATUS_TAG_MAP,
   ...PAYMENT_STATUS_TAG_MAP,
+  ...ROOM_STATUS_TAG_MAP,
 };
 
-/** Returns label and Tailwind token classes for a booking or payment status. */
-export function getStatusTagStyle(status: TagStatus, kind?: "booking" | "payment"): StatusTagStyle {
+/** Returns label and Tailwind token classes for a booking, payment, or room status. */
+export function getStatusTagStyle(
+  status: TagStatus,
+  kind?: "booking" | "payment" | "room",
+): StatusTagStyle {
   if (kind === "booking" && status in BOOKING_STATUS_TAG_MAP) {
     return BOOKING_STATUS_TAG_MAP[status as BookingStatus];
   }
   if (kind === "payment" && status in PAYMENT_STATUS_TAG_MAP) {
     return PAYMENT_STATUS_TAG_MAP[status as PaymentStatus];
+  }
+  if (kind === "room" && status in ROOM_STATUS_TAG_MAP) {
+    return ROOM_STATUS_TAG_MAP[status as RoomStatusTag];
   }
   return STATUS_TAG_MAP[status];
 }

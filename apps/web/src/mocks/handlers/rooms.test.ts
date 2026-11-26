@@ -316,8 +316,14 @@ describe("mock rooms module", () => {
     expect(adminList.data.some((r) => r.id === created.id && !r.isActive)).toBe(true);
     expect((await getRoom(created.id)).isActive).toBe(false);
 
+    const adminInactiveOnly = await listRooms({ includeInactive: true, isActive: false, limit: 20 });
+    expect(adminInactiveOnly.data.map((r) => r.id)).toEqual([created.id]);
+
+    const adminSearch = await listRooms({ includeInactive: true, q: "401", limit: 20 });
+    expect(adminSearch.data.map((r) => r.id)).toEqual([created.id]);
+
     await login({ email: "guest@example.com", password: "Passw0rd!123" });
-    const publicList = await listRooms({ includeInactive: true, limit: 20 });
+    const publicList = await listRooms({ includeInactive: true, isActive: false, limit: 20 });
     expect(publicList.data.some((r) => r.id === created.id)).toBe(false);
     await expect(getRoom(created.id)).rejects.toMatchObject({
       status: 404,

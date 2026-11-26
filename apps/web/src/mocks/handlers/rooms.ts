@@ -59,6 +59,13 @@ export function registerRoomHandlers(mock: MockAdapter): void {
 
     let rooms = getMockRooms().filter((room) => includeInactive || room.isActive);
 
+    if (isAdmin && includeInactive && query.isActive !== undefined) {
+      rooms = rooms.filter((room) => room.isActive === query.isActive);
+    }
+    if (query.q !== undefined) {
+      const needle = query.q.trim().toLowerCase();
+      rooms = rooms.filter((room) => room.number.toLowerCase().includes(needle));
+    }
     if (query.type !== undefined) {
       rooms = rooms.filter((room) => room.type === query.type);
     }
