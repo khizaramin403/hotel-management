@@ -1,3 +1,4 @@
+export { BookingCard, type BookingCardProps } from "./components/BookingCard";
 export { HeroSearchCard, HeroSearchCardFallback } from "./components/HeroSearchCard";
 export { HomeHero } from "./components/HomeHero";
 export { HomeRoomsSection } from "./components/HomeRoomsSection";
@@ -8,6 +9,7 @@ export { RoomDetailView, type RoomDetailViewProps } from "./components/RoomDetai
 export { RoomGallery, type RoomGalleryProps } from "./components/RoomGallery";
 export { RoomGrid, type RoomGridProps } from "./components/RoomGrid";
 export { RoomsFilterBar, type RoomsFilterBarProps } from "./components/RoomsFilterBar";
+export { useRoomAvailabilityQuery } from "./hooks/useRoomAvailabilityQuery";
 export { useRoomQuery } from "./hooks/useRoomQuery";
 export {
   DEFAULT_ROOMS_LIMIT,

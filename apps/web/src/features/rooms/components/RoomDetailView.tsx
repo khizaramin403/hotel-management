@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Breadcrumb, Button, Skeleton, Tag } from "antd";
@@ -8,6 +9,7 @@ import { ApiClientError } from "@/lib/api";
 import { plural } from "@/lib/format";
 import { useRoomQuery } from "../hooks/useRoomQuery";
 import { getFacilityIcon } from "../lib/facilityIcons";
+import { BookingCard } from "./BookingCard";
 import { RoomDescription } from "./RoomDescription";
 import { RoomGallery } from "./RoomGallery";
 
@@ -73,7 +75,7 @@ export function RoomDetailView({ roomId }: RoomDetailViewProps) {
     (error instanceof ApiClientError && (error.code === "NOT_FOUND" || error.status === 404));
 
   return (
-    <section className="mx-auto max-w-container px-4 py-8 lg:px-6">
+    <section className="mx-auto max-w-container px-4 pt-8 pb-24 lg:px-6 lg:pb-8">
       {!isValidId || (isError && isNotFound) ? (
         <ErrorState
           status="404"
@@ -140,7 +142,11 @@ export function RoomDetailView({ roomId }: RoomDetailViewProps) {
               <RoomDescription key={`description-${room.id}`} description={room.description} />
             </div>
 
-            <aside className="lg:col-span-4" aria-label="Booking panel placeholder" />
+            <aside className="lg:col-span-4">
+              <Suspense fallback={null}>
+                <BookingCard room={room} />
+              </Suspense>
+            </aside>
           </div>
         </div>
       )}

@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { RoomDetail } from "@hotel/shared";
+import { Provider } from "react-redux";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resetMockInitForTests } from "@/lib/api/client";
 import * as roomsEndpoint from "@/lib/api/endpoints/rooms";
@@ -8,6 +9,7 @@ import { ApiClientError } from "@/lib/api/errors";
 import { teardownMocks } from "@/mocks";
 import { resetMockDb } from "@/mocks/db";
 import { AntdProvider } from "@/providers/AntdProvider";
+import { makeStore } from "@/store";
 import { RoomDetailView } from "./RoomDetailView";
 
 const mockPush = vi.fn();
@@ -17,6 +19,7 @@ vi.mock("next/navigation", () => ({
     push: mockPush,
     replace: vi.fn(),
   }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 function createTestQueryClient() {
@@ -31,11 +34,13 @@ function createTestQueryClient() {
 
 function renderRoomDetail(roomId: number, queryClient = createTestQueryClient()) {
   return render(
-    <QueryClientProvider client={queryClient}>
-      <AntdProvider>
-        <RoomDetailView roomId={roomId} />
-      </AntdProvider>
-    </QueryClientProvider>,
+    <Provider store={makeStore()}>
+      <QueryClientProvider client={queryClient}>
+        <AntdProvider>
+          <RoomDetailView roomId={roomId} />
+        </AntdProvider>
+      </QueryClientProvider>
+    </Provider>,
   );
 }
 
