@@ -3,15 +3,17 @@
 import { useEffect } from "react";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { guestDetailsSchema, type GuestDetailsInput } from "@hotel/shared";
+import { guestDetailsSchema, type GuestDetailsInput, type ValidationErrorDetail } from "@hotel/shared";
 import { Button, Input } from "antd";
 import { Controller, useForm, type FieldErrors } from "react-hook-form";
+import { applyServerValidationDetails } from "@/components/auth/authFormErrors";
 import type { BookingGuestDetails } from "@/store/slices/bookingDraftSlice";
 
 export interface BookingGuestDetailsFormProps {
   initialDetails: BookingGuestDetails;
   prefillName?: string;
   prefillEmail?: string;
+  serverErrors?: readonly ValidationErrorDetail[];
   onSyncDraft: (details: Partial<BookingGuestDetails>) => void;
   onBack: (details: BookingGuestDetails) => void;
   onContinue: (details: BookingGuestDetails) => void;
@@ -52,6 +54,7 @@ export function BookingGuestDetailsForm({
   initialDetails,
   prefillName = "",
   prefillEmail = "",
+  serverErrors,
   onSyncDraft,
   onBack,
   onContinue,
@@ -60,6 +63,7 @@ export function BookingGuestDetailsForm({
     control,
     getValues,
     setValue,
+    setError,
     handleSubmit,
     formState: { errors, dirtyFields },
   } = useForm<GuestDetailsInput>({
@@ -85,6 +89,12 @@ export function BookingGuestDetailsForm({
       setValue("email", prefillEmail);
     }
   }, [dirtyFields.email, getValues, prefillEmail, setValue]);
+
+  useEffect(() => {
+    if (serverErrors && serverErrors.length > 0) {
+      applyServerValidationDetails(serverErrors, FIELD_ORDER, setError);
+    }
+  }, [serverErrors, setError]);
 
   const handleValidSubmit = (values: GuestDetailsInput) => {
     onContinue(values);
