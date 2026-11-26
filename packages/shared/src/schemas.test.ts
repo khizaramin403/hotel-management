@@ -15,6 +15,7 @@ import {
   sendMessageSchema,
   updateRoomImageSchema,
   updateRoomSchema,
+  userSchema,
 } from "./schemas/index";
 
 describe("registerSchema", () => {
@@ -330,6 +331,24 @@ describe("additional contract schemas", () => {
       pushSubscriptionSchema.safeParse({
         endpoint: "https://push.example.com/sub/1",
         keys: { p256dh: "key1", auth: "auth1" },
+      }).success,
+    ).toBe(true);
+
+    expect(
+      userSchema.safeParse({
+        id: 2,
+        name: "Ali Raza",
+        email: "staff@example.com",
+        role: "staff",
+        createdAt: "2026-11-20T09:00:00.000Z",
+      }).success,
+    ).toBe(true);
+    expect(
+      userSchema.safeParse({
+        id: 2,
+        name: "Ali Raza",
+        email: "staff@example.com",
+        role: "staff",
       }).success,
     ).toBe(true);
   });

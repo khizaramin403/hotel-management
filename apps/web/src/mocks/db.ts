@@ -26,6 +26,7 @@ const MOCK_WEBHOOK_DELAY_MS = 2500;
 
 export interface MockUserRecord extends User {
   password: string;
+  createdAt: string;
 }
 
 const SEED_USERS: readonly MockUserRecord[] = [
@@ -35,6 +36,7 @@ const SEED_USERS: readonly MockUserRecord[] = [
     email: "guest@example.com",
     password: "Passw0rd!123",
     role: "guest",
+    createdAt: "2026-11-18T08:00:00.000Z",
   },
   {
     id: 2,
@@ -42,6 +44,7 @@ const SEED_USERS: readonly MockUserRecord[] = [
     email: "staff@example.com",
     password: "Passw0rd!123",
     role: "staff",
+    createdAt: "2026-11-19T09:30:00.000Z",
   },
   {
     id: 3,
@@ -49,6 +52,7 @@ const SEED_USERS: readonly MockUserRecord[] = [
     email: "admin@example.com",
     password: "Passw0rd!123",
     role: "admin",
+    createdAt: "2026-11-18T07:00:00.000Z",
   },
   {
     id: 4,
@@ -56,6 +60,7 @@ const SEED_USERS: readonly MockUserRecord[] = [
     email: "guest2@example.com",
     password: "Passw0rd!123",
     role: "guest",
+    createdAt: "2026-11-20T14:15:00.000Z",
   },
 ];
 
@@ -180,6 +185,7 @@ export function toPublicUser(user: MockUserRecord): User {
     name: user.name,
     email: user.email,
     role: user.role,
+    createdAt: user.createdAt,
   };
 }
 
@@ -204,6 +210,7 @@ export function createMockUser(input: {
     email: input.email,
     password: input.password,
     role: input.role,
+    createdAt: new Date().toISOString(),
   };
   dbState.nextUserId += 1;
   dbState.users.push(record);

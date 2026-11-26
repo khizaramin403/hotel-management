@@ -18,6 +18,7 @@ export const userSchema = z.object({
   name: z.string(),
   email: emailSchema,
   role: roleSchema,
+  createdAt: isoTimestampSchema.optional(),
 });
 
 export const imageUrlsSchema = z.object({

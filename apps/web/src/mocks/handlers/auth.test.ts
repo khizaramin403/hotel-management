@@ -182,6 +182,7 @@ describe("mock infrastructure and auth handlers", () => {
     const initialList = await listStaff({ page: 1, limit: 10 });
     expect(initialList.data).toHaveLength(1);
     expect(initialList.data[0]).toMatchObject({ email: "staff@example.com", role: "staff" });
+    expect(typeof initialList.data[0]?.createdAt).toBe("string");
     expect(initialList.meta).toEqual({ page: 1, limit: 10, total: 1, totalPages: 1 });
 
     const createdStaff = await createStaff({
@@ -190,6 +191,7 @@ describe("mock infrastructure and auth handlers", () => {
       password: "Password123",
     });
     expect(createdStaff).toMatchObject({ email: "bilal@example.com", role: "staff" });
+    expect(typeof createdStaff.createdAt).toBe("string");
 
     await expect(
       createStaff({

@@ -47,7 +47,7 @@ type RoomType = "Single" | "Double" | "Deluxe" | "Suite" | "Family";
 type BookingStatus = "pending" | "confirmed" | "checked_in" | "checked_out" | "cancelled";
 type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 
-User    = { id, name, email, role }
+User    = { id, name, email, role, createdAt? }
 Image   = { id, key, isCover, sortOrder, urls: { sm, md, lg } }          // 400 / 800 / 1600 px WebP
 Room    = { id, number, type, pricePerNight, capacity, facilities: string[], description,
             isActive, coverImage: Image | null }

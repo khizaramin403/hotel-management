@@ -1,12 +1,10 @@
-import { PageHeader } from "@/components/ui";
+import { Suspense } from "react";
+import { StaffSkeleton, StaffView } from "@/features/staff";
 
 export default function DashboardStaffPage() {
   return (
-    <section>
-      <PageHeader title="Staff" variant="h3" />
-      <p className="mt-4 font-sans text-[14px] leading-[22px] text-muted">
-        Coming in the next steps.
-      </p>
-    </section>
+    <Suspense fallback={<StaffSkeleton />}>
+      <StaffView />
+    </Suspense>
   );
 }
