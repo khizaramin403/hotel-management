@@ -11,16 +11,13 @@ export { RoomGrid, type RoomGridProps } from "./components/RoomGrid";
 export { RoomsFilterBar, type RoomsFilterBarProps } from "./components/RoomsFilterBar";
 export { useRoomAvailabilityQuery } from "./hooks/useRoomAvailabilityQuery";
 export { useRoomQuery } from "./hooks/useRoomQuery";
-export {
-  DEFAULT_ROOMS_LIMIT,
-  DEFAULT_ROOMS_PAGE,
-  useRoomsQuery,
-  type RoomsQueryParams,
-} from "./hooks/useRoomsQuery";
+export { useRoomsQuery, type RoomsQueryParams } from "./hooks/useRoomsQuery";
 export { getFacilityIcon } from "./lib/facilityIcons";
 export {
   buildHeroSearchUrl,
   buildUpdatedRoomsUrl,
+  DEFAULT_ROOMS_LIMIT,
+  DEFAULT_ROOMS_PAGE,
   DEFAULT_SEARCH_GUESTS,
   getSelectedPricePresetId,
   MAX_SEARCH_GUESTS,

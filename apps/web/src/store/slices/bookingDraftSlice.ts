@@ -66,6 +66,9 @@ const bookingDraftSlice = createSlice({
     setBookingStep(state, action: PayloadAction<BookingStep>) {
       state.step = action.payload;
     },
+    hydrateBookingDraft(_state, action: PayloadAction<BookingDraftState>) {
+      return action.payload;
+    },
     resetBookingDraft() {
       return initialState;
     },
@@ -79,6 +82,7 @@ export const {
   setGuestDetails,
   setIdempotencyKey,
   setBookingStep,
+  hydrateBookingDraft,
   resetBookingDraft,
 } = bookingDraftSlice.actions;
 export const bookingDraftReducer = bookingDraftSlice.reducer;

@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import type { Room } from "@hotel/shared";
 import { EmptyState } from "@/components/ui";
-import { DEFAULT_ROOMS_LIMIT } from "../hooks/useRoomsQuery";
+import { DEFAULT_ROOMS_LIMIT } from "../lib/searchParams";
 import { RoomCard } from "./RoomCard";
 import { RoomCardSkeleton } from "./RoomCardSkeleton";
 

@@ -1,3 +1,5 @@
+"use client";
+
 import type { AriaAttributes, ComponentType } from "react";
 import {
   BarChartOutlined,

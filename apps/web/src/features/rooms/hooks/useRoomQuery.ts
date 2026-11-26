@@ -1,3 +1,5 @@
+"use client";
+
 import type { RoomDetail } from "@hotel/shared";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { ApiClientError, getRoom, queryKeys } from "@/lib/api";

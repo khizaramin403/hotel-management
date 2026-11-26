@@ -7,6 +7,7 @@ import { Provider } from "react-redux";
 import { configureApiAuthHandlers, ensureMocksInitialized } from "@/lib/api/client";
 import { getMe } from "@/lib/api/endpoints/auth";
 import { makeStore } from "@/store";
+import { attachBookingDraftPersistence } from "@/store/bookingDraftStorage";
 import { clearAuth, setAuthLoading, setAuthUser } from "@/store/slices/authSlice";
 import { AntdProvider } from "./AntdProvider";
 
@@ -39,6 +40,7 @@ export function AppProviders({ children }: Readonly<{ children: ReactNode }>) {
 
   useEffect(() => {
     let cancelled = false;
+    const detachBookingDraftPersistence = attachBookingDraftPersistence(store);
 
     configureApiAuthHandlers({
       onUnauthorized: () => {
@@ -65,6 +67,7 @@ export function AppProviders({ children }: Readonly<{ children: ReactNode }>) {
 
     return () => {
       cancelled = true;
+      detachBookingDraftPersistence();
       configureApiAuthHandlers({});
     };
   }, [store]);

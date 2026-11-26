@@ -1,9 +1,11 @@
+"use client";
+
 import type { RoomsQuery } from "@hotel/shared";
 import { keepPreviousData, useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { listRooms, queryKeys, type RoomsListResult } from "@/lib/api";
+import { DEFAULT_ROOMS_LIMIT, DEFAULT_ROOMS_PAGE } from "../lib/searchParams";
 
-export const DEFAULT_ROOMS_PAGE = 1;
-export const DEFAULT_ROOMS_LIMIT = 12;
+export { DEFAULT_ROOMS_LIMIT, DEFAULT_ROOMS_PAGE };
 
 export type RoomsQueryParams = Partial<RoomsQuery>;
 

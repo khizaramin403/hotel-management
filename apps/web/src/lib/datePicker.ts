@@ -1,3 +1,5 @@
+"use client";
+
 import { DatePicker } from "antd";
 
 type DateGenerateConfig = Parameters<typeof DatePicker.generatePicker<Date>>[0];

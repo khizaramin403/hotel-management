@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   bookingStatusSchema,
   dateStringSchema,
+  emailSchema,
   idSchema,
   MAX_PAGE_LIMIT,
   validateStayDates,
@@ -19,6 +20,23 @@ export const createBookingSchema = z
   .superRefine((data, ctx) => {
     validateStayDates(data.checkIn, data.checkOut, ctx);
   });
+
+export const guestDetailsSchema = z.object({
+  fullName: z
+    .string()
+    .trim()
+    .min(2, "Full name must be at least 2 characters")
+    .max(60, "Full name must be at most 60 characters"),
+  phone: z
+    .string()
+    .trim()
+    .min(7, "Enter a valid phone number")
+    .max(25, "Phone number must be at most 25 characters")
+    .regex(/^\+?[0-9()\-\s]+$/, "Enter a valid phone number")
+    .refine((value) => value.replace(/\D/g, "").length >= 7, "Enter a valid phone number"),
+  email: emailSchema,
+  specialRequests: z.string().trim().max(500, "Special requests must be at most 500 characters"),
+});
 
 const statusListSchema = z.preprocess((val) => {
   if (val === undefined || val === "") return undefined;

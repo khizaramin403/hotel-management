@@ -4,6 +4,7 @@ import {
   createBookingSchema,
   createRoomSchema,
   errorResponseSchema,
+  guestDetailsSchema,
   loginSchema,
   paginatedResponseSchema,
   paymentWebhookSchema,
@@ -155,6 +156,51 @@ describe("createBookingSchema", () => {
         checkIn: "2026-02-30",
         checkOut: "2026-03-02",
         guests: 1,
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe("guestDetailsSchema", () => {
+  it("accepts valid guest details with empty optional specialRequests and trims fields", () => {
+    const res = guestDetailsSchema.safeParse({
+      fullName: "  Sara Khan  ",
+      phone: " +92 300 0000000 ",
+      email: "sara@example.com",
+      specialRequests: "",
+    });
+    expect(res.success).toBe(true);
+    if (res.success) {
+      expect(res.data.fullName).toBe("Sara Khan");
+      expect(res.data.phone).toBe("+92 300 0000000");
+    }
+  });
+
+  it("rejects short full name, invalid phone, or invalid email", () => {
+    expect(
+      guestDetailsSchema.safeParse({
+        fullName: "A",
+        phone: "+92 300 0000000",
+        email: "sara@example.com",
+        specialRequests: "",
+      }).success,
+    ).toBe(false);
+
+    expect(
+      guestDetailsSchema.safeParse({
+        fullName: "Sara Khan",
+        phone: "123",
+        email: "sara@example.com",
+        specialRequests: "",
+      }).success,
+    ).toBe(false);
+
+    expect(
+      guestDetailsSchema.safeParse({
+        fullName: "Sara Khan",
+        phone: "+92 300 0000000",
+        email: "not-an-email",
+        specialRequests: "",
       }).success,
     ).toBe(false);
   });

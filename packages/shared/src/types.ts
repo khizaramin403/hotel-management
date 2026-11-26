@@ -16,6 +16,7 @@ import {
   cursorMetaSchema,
   errorCodeSchema,
   errorResponseSchema,
+  guestDetailsSchema,
   idParamSchema,
   imageSchema,
   imageUrlsSchema,
@@ -104,6 +105,7 @@ export type UploadUrlInput = z.infer<typeof uploadUrlSchema>;
 export type SaveImageInput = z.infer<typeof saveImageSchema>;
 
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
+export type GuestDetailsInput = z.infer<typeof guestDetailsSchema>;
 export type BookingsQuery = z.infer<typeof bookingsQuerySchema>;
 export type SetStatusInput = z.infer<typeof setStatusSchema>;
 export type ReportQuery = z.infer<typeof reportQuerySchema>;

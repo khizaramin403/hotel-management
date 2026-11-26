@@ -6,7 +6,9 @@ import {
   type RoomsQuery,
   type RoomType,
 } from "@hotel/shared";
-import { DEFAULT_ROOMS_LIMIT, DEFAULT_ROOMS_PAGE } from "../hooks/useRoomsQuery";
+
+export const DEFAULT_ROOMS_PAGE = 1;
+export const DEFAULT_ROOMS_LIMIT = 12;
 
 export const MIN_SEARCH_GUESTS = 1;
 export const MAX_SEARCH_GUESTS = 6;
