@@ -238,7 +238,7 @@ function BookingCardContent({
         <div
           role="group"
           aria-labelledby={`${idPrefix}-guests-label`}
-          className="flex min-h-[44px] items-center justify-between rounded-md border border-line-strong bg-neutral-0 px-1 transition-colors duration-[120ms] hover:border-green-300 focus-within:border-green-600 focus-within:shadow-[0_0_0_3px_rgba(31,77,69,0.15)] lg:h-10 lg:min-h-[40px]"
+          className="flex min-h-[44px] items-center justify-between rounded-md border border-line-strong bg-neutral-0 px-1 transition-colors duration-[120ms] hover:border-green-300 focus-within:border-green-600 focus-within:shadow-focus-ring lg:h-10 lg:min-h-[40px]"
         >
           <Button
             type="text"
@@ -246,7 +246,7 @@ function BookingCardContent({
             aria-label="Decrease guests"
             disabled={guests <= 1}
             onClick={() => setGuests((prev) => Math.max(1, prev - 1))}
-            className="flex h-9 w-9 items-center justify-center"
+            className="flex h-11 w-11 items-center justify-center lg:h-9 lg:w-9"
           />
           <span
             data-testid={`${idPrefix}-guests-value`}
@@ -260,7 +260,7 @@ function BookingCardContent({
             aria-label="Increase guests"
             disabled={guests >= room.capacity}
             onClick={() => setGuests((prev) => Math.min(room.capacity, prev + 1))}
-            className="flex h-9 w-9 items-center justify-center"
+            className="flex h-11 w-11 items-center justify-center lg:h-9 lg:w-9"
           />
         </div>
       </div>
@@ -412,7 +412,6 @@ function BookingCardContent({
         destroyOnHidden
         styles={{
           wrapper: { maxWidth: "100vw" },
-          mask: { backgroundColor: "rgba(20, 49, 44, 0.45)" },
         }}
       >
         <div className="space-y-6">

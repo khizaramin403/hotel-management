@@ -71,9 +71,6 @@ export function RoomGalleryLightbox({
       width={720}
       centered
       destroyOnHidden
-      styles={{
-        mask: { backgroundColor: "rgba(20, 49, 44, 0.45)" },
-      }}
       title={
         <span className="font-serif text-[20px] font-medium leading-[28px] text-ink md:text-[22px] md:leading-[30px]">
           {roomTitle}
@@ -98,6 +95,7 @@ export function RoomGalleryLightbox({
               <Button
                 icon={<LeftOutlined aria-hidden="true" />}
                 aria-label="Previous photo"
+                className="min-h-[44px] min-w-[44px] lg:min-h-0 lg:min-w-0"
                 onClick={handlePrevious}
               />
             </Tooltip>
@@ -110,6 +108,7 @@ export function RoomGalleryLightbox({
               <Button
                 icon={<RightOutlined aria-hidden="true" />}
                 aria-label="Next photo"
+                className="min-h-[44px] min-w-[44px] lg:min-h-0 lg:min-w-0"
                 onClick={handleNext}
               />
             </Tooltip>

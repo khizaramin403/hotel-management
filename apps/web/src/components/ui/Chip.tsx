@@ -30,7 +30,7 @@ export function Chip({
       aria-pressed={selected}
       disabled={disabled}
       onClick={() => onToggle(!selected)}
-      className={`inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full border px-[14px] font-sans text-[14px] font-medium leading-[20px] transition-colors duration-[120ms] disabled:cursor-not-allowed disabled:border-line disabled:bg-canvas disabled:text-neutral-400 md:h-9 md:min-h-0 ${stateClasses} ${className}`.trim()}
+      className={`inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full border px-[14px] font-sans text-[14px] font-medium leading-[20px] transition-colors duration-[120ms] disabled:cursor-not-allowed disabled:border-line disabled:bg-canvas disabled:text-neutral-400 lg:h-9 lg:min-h-0 ${stateClasses} ${className}`.trim()}
     >
       {selected ? <CheckOutlined className="text-[16px] leading-none" aria-hidden="true" /> : null}
       <span>{children ?? label}</span>

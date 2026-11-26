@@ -74,6 +74,7 @@ module.exports = {
       boxShadow: {
         e1: "0 4px 12px rgba(20,49,44,0.08)",
         e2: "0 12px 32px rgba(20,49,44,0.16)",
+        "focus-ring": "0 0 0 3px rgba(31,77,69,0.15)",
       },
       maxWidth: {
         container: "1200px",

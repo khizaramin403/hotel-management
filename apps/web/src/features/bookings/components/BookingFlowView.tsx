@@ -34,6 +34,7 @@ import {
   type BookingDraftState,
   type BookingStep,
 } from "@/store/slices/bookingDraftSlice";
+import { updateMyBookingsCache } from "../lib/bookingCache";
 import { BookingGuestDetailsForm } from "./BookingGuestDetailsForm";
 import { BookingPaymentStep, type ActivePaymentSession } from "./BookingPaymentStep";
 import { BookingResultCard } from "./BookingResultCard";
@@ -227,7 +228,7 @@ export function BookingFlowView({ roomId }: BookingFlowViewProps) {
     setCompletedBooking(booking);
     setPaymentSession(null);
     dispatch(resetBookingDraft());
-    void queryClient.invalidateQueries({ queryKey: queryKeys.bookings.myLists() });
+    updateMyBookingsCache(queryClient, booking);
     void queryClient.invalidateQueries({ queryKey: queryKeys.rooms.all });
   };
 

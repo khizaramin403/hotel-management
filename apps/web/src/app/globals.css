@@ -159,13 +159,21 @@ h3 {
   color: #ffffff;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .ant-btn {
     min-height: 44px;
   }
 
   .ant-btn.ant-btn-icon-only {
     min-width: 44px;
+  }
+
+  .ant-pagination-item,
+  .ant-pagination-prev,
+  .ant-pagination-next {
+    min-width: 44px;
+    min-height: 44px;
+    line-height: 42px;
   }
 
   .ant-input-affix-wrapper,

@@ -148,7 +148,7 @@ function HeroSearchForm({ initialValues, currentSearchParams }: HeroSearchFormPr
           <div
             role="group"
             aria-labelledby="hero-search-guests-label"
-            className="flex h-12 items-center justify-between rounded-md border border-line-strong bg-neutral-0 px-1 transition-colors duration-[120ms] hover:border-green-300 focus-within:border-green-600 focus-within:shadow-[0_0_0_3px_rgba(31,77,69,0.15)]"
+            className="flex h-12 items-center justify-between rounded-md border border-line-strong bg-neutral-0 px-1 transition-colors duration-[120ms] hover:border-green-300 focus-within:border-green-600 focus-within:shadow-focus-ring"
           >
             <Button
               type="text"

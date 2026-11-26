@@ -442,9 +442,6 @@ export function MyBookingsView() {
           </span>
         }
         destroyOnHidden
-        styles={{
-          mask: { backgroundColor: "rgba(20, 49, 44, 0.45)" },
-        }}
       >
         {paymentSession ? (
           <PaymentWaitingPanel

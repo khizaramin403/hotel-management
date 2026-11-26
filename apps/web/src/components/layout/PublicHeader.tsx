@@ -115,7 +115,7 @@ export function PublicHeader() {
               <button
                 type="button"
                 aria-label="Account menu"
-                className="flex min-h-[44px] cursor-pointer items-center gap-2 rounded-md border border-transparent bg-transparent px-2 py-1 text-left transition-colors hover:bg-green-50 md:min-h-[40px]"
+                className="flex min-h-[44px] cursor-pointer items-center gap-2 rounded-md border border-transparent bg-transparent px-2 py-1 text-left transition-colors hover:bg-green-50 lg:min-h-[40px]"
               >
                 <Avatar
                   size={32}
@@ -131,8 +131,7 @@ export function PublicHeader() {
           ) : (
             <Button
               type="primary"
-              size="small"
-              className="hidden md:inline-flex"
+              className="hidden min-h-[44px] md:inline-flex lg:h-8 lg:min-h-0"
               onClick={() => router.push("/login")}
             >
               Login

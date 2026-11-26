@@ -41,7 +41,6 @@ export function BookingDetailDrawer({
       destroyOnHidden
       styles={{
         wrapper: { maxWidth: "100vw" },
-        mask: { backgroundColor: "rgba(20, 49, 44, 0.45)" },
       }}
     >
       {booking ? (

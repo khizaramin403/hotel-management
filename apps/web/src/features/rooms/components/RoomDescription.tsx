@@ -63,7 +63,7 @@ export function RoomDescription({ description }: RoomDescriptionProps) {
           size="small"
           aria-expanded={expanded}
           onClick={() => setExpanded((prev) => !prev)}
-          className="mt-2 !min-w-0 !px-2"
+          className="mt-2 min-h-[44px] !min-w-0 !px-2 lg:min-h-0"
         >
           {expanded ? "Show less" : "Read more"}
         </Button>

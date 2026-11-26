@@ -32,6 +32,7 @@ const theme: ThemeConfig = {
     colorBorderSecondary: "#E7E5DF",
     controlOutline: "rgba(31,77,69,0.15)",
     colorErrorOutline: "rgba(180,35,24,0.15)",
+    colorBgMask: "rgba(20, 49, 44, 0.45)",
     borderRadius: 8,
     borderRadiusLG: 12,
     borderRadiusSM: 4,
@@ -136,6 +137,7 @@ const theme: ThemeConfig = {
     Modal: { borderRadiusLG: 12 },
     Card: { borderRadiusLG: 12 },
     Pagination: {
+      itemSize: 40,
       itemActiveBg: "#1F4D45",
       itemActiveColor: "#FFFFFF",
       itemActiveColorHover: "#FFFFFF",
