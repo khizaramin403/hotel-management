@@ -1,12 +1,10 @@
-import { PageHeader } from "@/components/ui";
+import { DashboardOverviewView } from "@/features/dashboard";
 
 export default function DashboardOverviewPage() {
   return (
-    <section>
-      <PageHeader title="Dashboard" variant="h3" />
-      <p className="mt-4 font-sans text-[14px] leading-[22px] text-muted">
-        Coming in the next steps.
-      </p>
-    </section>
+    <>
+      <h1 className="sr-only">Dashboard</h1>
+      <DashboardOverviewView />
+    </>
   );
 }
