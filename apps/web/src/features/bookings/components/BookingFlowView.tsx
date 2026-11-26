@@ -1,34 +1,42 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   calcTotals,
   isValidCalendarDate,
   MAX_STAY_NIGHTS,
   nightsBetween,
+  type Booking,
+  type ValidationErrorDetail,
 } from "@hotel/shared";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button, Skeleton, Steps } from "antd";
 import { ErrorState } from "@/components/ui";
 import { useRoomAvailabilityQuery, useRoomQuery } from "@/features/rooms";
-import { ApiClientError } from "@/lib/api";
+import { ApiClientError, queryKeys } from "@/lib/api";
 import { getTodayCalendarDate } from "@/lib/datePicker";
 import { attachBookingDraftPersistence } from "@/store/bookingDraftStorage";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/store/hooks";
 import { selectAuthUser } from "@/store/slices/authSlice";
 import {
+  resetBookingDraft,
   selectBookingCheckIn,
   selectBookingCheckOut,
   selectBookingGuestDetails,
   selectBookingGuests,
+  selectBookingIdempotencyKey,
   selectBookingRoomId,
   selectBookingStep,
   setBookingStep,
   setGuestDetails,
+  setIdempotencyKey,
   type BookingDraftState,
   type BookingStep,
 } from "@/store/slices/bookingDraftSlice";
 import { BookingGuestDetailsForm } from "./BookingGuestDetailsForm";
+import { BookingPaymentStep, type ActivePaymentSession } from "./BookingPaymentStep";
+import { BookingResultCard } from "./BookingResultCard";
 import { BookingRoomStep } from "./BookingRoomStep";
 import { BookingSummaryCard } from "./BookingSummaryCard";
 
@@ -109,6 +117,7 @@ function isBookingDraftValidForRoom(
 
 export function BookingFlowView({ roomId }: BookingFlowViewProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const store = useAppStore();
   const dispatch = useAppDispatch();
 
@@ -118,7 +127,15 @@ export function BookingFlowView({ roomId }: BookingFlowViewProps) {
   const draftCheckOut = useAppSelector(selectBookingCheckOut);
   const draftGuests = useAppSelector(selectBookingGuests);
   const draftGuestDetails = useAppSelector(selectBookingGuestDetails);
+  const draftIdempotencyKey = useAppSelector(selectBookingIdempotencyKey);
   const currentStep = useAppSelector(selectBookingStep);
+
+  const [paymentSession, setPaymentSession] = useState<ActivePaymentSession | null>(null);
+  const [completedBooking, setCompletedBooking] = useState<Booking | null>(null);
+  const [guestDetailsServerErrors, setGuestDetailsServerErrors] = useState<
+    readonly ValidationErrorDetail[]
+  >([]);
+  const completedRef = useRef(false);
 
   const isValidRoomId = Number.isInteger(roomId) && roomId > 0;
   const today = getTodayCalendarDate();
@@ -138,16 +155,32 @@ export function BookingFlowView({ roomId }: BookingFlowViewProps) {
     const detach = attachBookingDraftPersistence(store);
     const currentDraft = store.getState().bookingDraft;
 
-    if (isValidRoomId && !isBookingDraftValidForRoom(currentDraft, roomId, getTodayCalendarDate())) {
+    if (
+      !completedRef.current &&
+      !completedBooking &&
+      isValidRoomId &&
+      !isBookingDraftValidForRoom(currentDraft, roomId, getTodayCalendarDate())
+    ) {
       router.replace(`/rooms/${roomId}`);
     }
 
     return detach;
-  }, [draftCheckIn, draftCheckOut, draftGuests, draftRoomId, isValidRoomId, roomId, router, store]);
+  }, [
+    completedBooking,
+    draftCheckIn,
+    draftCheckOut,
+    draftGuests,
+    draftRoomId,
+    isValidRoomId,
+    roomId,
+    router,
+    store,
+  ]);
 
-  const queryRoomId = isDraftValidForRoom ? roomId : Number.NaN;
+  const shouldFetchRoom = isDraftValidForRoom && !completedBooking;
+  const queryRoomId = shouldFetchRoom ? roomId : Number.NaN;
   const availabilityQueryDates =
-    isDraftValidForRoom && draftCheckIn && draftCheckOut
+    shouldFetchRoom && draftCheckIn && draftCheckOut
       ? { checkIn: draftCheckIn, checkOut: draftCheckOut }
       : null;
 
@@ -181,14 +214,40 @@ export function BookingFlowView({ roomId }: BookingFlowViewProps) {
   const isUnavailable = Boolean(!isCheckingAvailability && availability?.available === false);
 
   const handleStepClick = (nextIndex: number) => {
+    if (paymentSession !== null || completedBooking !== null) {
+      return;
+    }
     if (nextIndex < currentStep && (nextIndex === 0 || nextIndex === 1 || nextIndex === 2)) {
       dispatch(setBookingStep(nextIndex as BookingStep));
     }
   };
 
+  const handleBookingConfirmed = (booking: Booking) => {
+    completedRef.current = true;
+    setCompletedBooking(booking);
+    setPaymentSession(null);
+    dispatch(resetBookingDraft());
+    void queryClient.invalidateQueries({ queryKey: queryKeys.bookings.myLists() });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.rooms.all });
+  };
+
   return (
     <section className="mx-auto max-w-container px-4 py-8 lg:px-6">
-      {!isValidRoomId || (isRoomError && isNotFound) ? (
+      {completedBooking ? (
+        <div>
+          <h1 className="sr-only">Booking confirmation</h1>
+
+          <div className="mx-auto mb-8 max-w-[640px]">
+            <Steps current={2} status="finish" items={STEP_ITEMS} />
+          </div>
+
+          <BookingResultCard
+            booking={completedBooking}
+            onViewBooking={() => router.push("/my-bookings")}
+            onBackToRooms={() => router.push("/")}
+          />
+        </div>
+      ) : !isValidRoomId || (isRoomError && isNotFound) ? (
         <ErrorState
           status="404"
           title="Room not found"
@@ -260,33 +319,37 @@ export function BookingFlowView({ roomId }: BookingFlowViewProps) {
                       initialDetails={draftGuestDetails}
                       prefillName={authUser?.name ?? ""}
                       prefillEmail={authUser?.email ?? ""}
+                      serverErrors={guestDetailsServerErrors}
                       onSyncDraft={(details) => dispatch(setGuestDetails(details))}
                       onBack={(details) => {
                         dispatch(setGuestDetails(details));
                         dispatch(setBookingStep(0));
                       }}
                       onContinue={(details) => {
+                        setGuestDetailsServerErrors([]);
                         dispatch(setGuestDetails(details));
                         dispatch(setBookingStep(2));
                       }}
                     />
                   ) : (
-                    <div className="space-y-4 rounded-lg border border-line bg-neutral-0 p-6">
-                      <h2 className="m-0 font-serif text-[20px] font-medium leading-[28px] text-ink md:text-[22px] md:leading-[30px]">
-                        Payment
-                      </h2>
-                      <p className="m-0 font-sans text-[14px] leading-[22px] text-muted">
-                        Payment confirmation will be completed in the next step.
-                      </p>
-                      <div className="pt-2">
-                        <Button
-                          onClick={() => dispatch(setBookingStep(1))}
-                          className="min-h-[44px] w-full lg:min-h-[40px] lg:w-auto lg:min-w-[88px]"
-                        >
-                          Back
-                        </Button>
-                      </div>
-                    </div>
+                    <BookingPaymentStep
+                      roomId={room.id}
+                      checkIn={draftCheckIn}
+                      checkOut={draftCheckOut}
+                      guests={draftGuests}
+                      totalPrice={totalPrice}
+                      roomPageHref={roomPageHref}
+                      idempotencyKey={draftIdempotencyKey}
+                      paymentSession={paymentSession}
+                      onSetIdempotencyKey={(key) => dispatch(setIdempotencyKey(key))}
+                      onPaymentStarted={(session) => setPaymentSession(session)}
+                      onConfirmed={handleBookingConfirmed}
+                      onServerGuestDetailsError={(details) => {
+                        setGuestDetailsServerErrors(details);
+                        dispatch(setBookingStep(1));
+                      }}
+                      onBack={() => dispatch(setBookingStep(1))}
+                    />
                   )}
                 </div>
 
