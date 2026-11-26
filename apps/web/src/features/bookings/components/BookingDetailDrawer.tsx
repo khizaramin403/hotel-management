@@ -10,20 +10,32 @@ export interface BookingDetailDrawerProps {
   booking: Booking | null;
   isCancelling?: boolean;
   isPaying?: boolean;
+  isUpdatingStatus?: boolean;
   onClose: () => void;
   onCancel: (bookingId: number) => Promise<void> | void;
-  onPayNow: (booking: Booking) => void;
+  onPayNow?: (booking: Booking) => void;
+  onCheckIn?: (bookingId: number) => Promise<void> | void;
+  onCheckOut?: (bookingId: number) => Promise<void> | void;
 }
 
 export function BookingDetailDrawer({
   booking,
   isCancelling = false,
   isPaying = false,
+  isUpdatingStatus = false,
   onClose,
   onCancel,
   onPayNow,
+  onCheckIn,
+  onCheckOut,
 }: BookingDetailDrawerProps) {
   const canCancel = booking ? canCancelBooking(booking) : false;
+  const showPayNow = Boolean(booking && onPayNow && booking.status === "pending");
+  const showCheckIn = Boolean(booking && onCheckIn && booking.status === "confirmed");
+  const showCheckOut = Boolean(booking && onCheckOut && booking.status === "checked_in");
+  const hasFooterActions = canCancel || showPayNow || showCheckIn || showCheckOut;
+  const isBusy = isCancelling || isPaying || isUpdatingStatus;
+
   const pricePerNight =
     booking && booking.nights > 0 ? Math.round(booking.subtotal / booking.nights) : 0;
 
@@ -107,7 +119,7 @@ export function BookingDetailDrawer({
             )}
           </div>
 
-          {booking.status === "pending" || canCancel ? (
+          {hasFooterActions ? (
             <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between">
               {canCancel ? (
                 <Popconfirm
@@ -121,7 +133,7 @@ export function BookingDetailDrawer({
                   <Button
                     danger
                     loading={isCancelling}
-                    disabled={isPaying}
+                    disabled={isBusy}
                     className="min-h-[44px] w-full sm:min-h-[40px] sm:w-auto sm:min-w-[88px]"
                   >
                     Cancel
@@ -131,15 +143,35 @@ export function BookingDetailDrawer({
                 <span />
               )}
 
-              {booking.status === "pending" ? (
+              {showPayNow && onPayNow ? (
                 <Button
                   type="primary"
                   loading={isPaying}
-                  disabled={isCancelling || isPaying}
+                  disabled={isBusy}
                   onClick={() => onPayNow(booking)}
                   className="min-h-[44px] w-full sm:min-h-[40px] sm:w-auto sm:min-w-[88px]"
                 >
                   Pay now
+                </Button>
+              ) : showCheckIn && onCheckIn ? (
+                <Button
+                  type="primary"
+                  loading={isUpdatingStatus}
+                  disabled={isBusy}
+                  onClick={() => onCheckIn(booking.id)}
+                  className="min-h-[44px] w-full sm:min-h-[40px] sm:w-auto sm:min-w-[88px]"
+                >
+                  Check in
+                </Button>
+              ) : showCheckOut && onCheckOut ? (
+                <Button
+                  type="primary"
+                  loading={isUpdatingStatus}
+                  disabled={isBusy}
+                  onClick={() => onCheckOut(booking.id)}
+                  className="min-h-[44px] w-full sm:min-h-[40px] sm:w-auto sm:min-w-[88px]"
+                >
+                  Check out
                 </Button>
               ) : null}
             </div>

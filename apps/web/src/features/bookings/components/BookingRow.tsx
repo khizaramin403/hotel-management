@@ -10,9 +10,13 @@ export interface BookingRowProps {
   booking: Booking;
   isCancelling?: boolean;
   isPaying?: boolean;
+  isUpdatingStatus?: boolean;
+  showGuest?: boolean;
   onView: (booking: Booking) => void;
   onCancel: (bookingId: number) => Promise<void> | void;
-  onPayNow: (booking: Booking) => void;
+  onPayNow?: (booking: Booking) => void;
+  onCheckIn?: (bookingId: number) => Promise<void> | void;
+  onCheckOut?: (bookingId: number) => Promise<void> | void;
 }
 
 export function canCancelBooking(booking: Pick<Booking, "status">): boolean {
@@ -23,12 +27,17 @@ export const BookingRow = memo(function BookingRow({
   booking,
   isCancelling = false,
   isPaying = false,
+  isUpdatingStatus = false,
+  showGuest = false,
   onView,
   onCancel,
   onPayNow,
+  onCheckIn,
+  onCheckOut,
 }: BookingRowProps) {
   const reference = bookingReference(booking.id);
   const canCancel = canCancelBooking(booking);
+  const isRowBusy = isCancelling || isPaying || isUpdatingStatus;
 
   return (
     <article
@@ -43,6 +52,11 @@ export const BookingRow = memo(function BookingRow({
           <h2 className="m-0 truncate font-sans text-[16px] font-semibold leading-[24px] text-ink">
             {booking.roomType} {booking.roomNumber}
           </h2>
+          {showGuest ? (
+            <div className="truncate font-sans text-[13px] leading-[20px] text-muted">
+              {booking.guestName}
+            </div>
+          ) : null}
         </div>
         <StatusTag status={booking.status} kind="booking" />
       </div>
@@ -66,15 +80,41 @@ export const BookingRow = memo(function BookingRow({
           View
         </Button>
 
-        {booking.status === "pending" ? (
+        {onPayNow && booking.status === "pending" ? (
           <Button
             size="small"
             loading={isPaying}
-            disabled={isCancelling || isPaying}
+            disabled={isRowBusy}
             onClick={() => onPayNow(booking)}
             className="min-h-[44px] md:min-h-[32px]"
           >
             Pay now
+          </Button>
+        ) : null}
+
+        {onCheckIn && booking.status === "confirmed" ? (
+          <Button
+            type="text"
+            size="small"
+            loading={isUpdatingStatus}
+            disabled={isRowBusy}
+            onClick={() => onCheckIn(booking.id)}
+            className="min-h-[44px] md:min-h-[32px]"
+          >
+            Check in
+          </Button>
+        ) : null}
+
+        {onCheckOut && booking.status === "checked_in" ? (
+          <Button
+            type="text"
+            size="small"
+            loading={isUpdatingStatus}
+            disabled={isRowBusy}
+            onClick={() => onCheckOut(booking.id)}
+            className="min-h-[44px] md:min-h-[32px]"
+          >
+            Check out
           </Button>
         ) : null}
 
@@ -92,7 +132,7 @@ export const BookingRow = memo(function BookingRow({
               danger
               size="small"
               loading={isCancelling}
-              disabled={isPaying}
+              disabled={isRowBusy}
               className="min-h-[44px] md:min-h-[32px]"
             >
               Cancel

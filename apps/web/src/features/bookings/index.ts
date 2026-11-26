@@ -22,6 +22,12 @@ export {
   type PaymentWaitingPanelProps,
 } from "./components/PaymentWaitingPanel";
 export {
+  SEARCH_DEBOUNCE_MS,
+  StaffBookingsFilterBar,
+  type StaffBookingsFilterBarProps,
+} from "./components/StaffBookingsFilterBar";
+export { StaffBookingsSkeleton, StaffBookingsView } from "./components/StaffBookingsView";
+export {
   BOOKING_POLL_INTERVAL_MS,
   isTerminalBookingState,
   useBookingStatusQuery,
@@ -32,7 +38,11 @@ export {
   usePaymentConfirmation,
   type UsePaymentConfirmationOptions,
 } from "./hooks/usePaymentConfirmation";
-export { updateMyBookingsCache } from "./lib/bookingCache";
+export {
+  useStaffBookingsQuery,
+  type UseStaffBookingsQueryParams,
+} from "./hooks/useStaffBookingsQuery";
+export { updateMyBookingsCache, updateStaffBookingsCache } from "./lib/bookingCache";
 export {
   buildMyBookingsUrl,
   DEFAULT_MY_BOOKINGS_LIMIT,
@@ -43,3 +53,13 @@ export {
   type MyBookingsTab,
   type ParsedMyBookingsParams,
 } from "./lib/myBookingsParams";
+export {
+  buildUpdatedStaffBookingsUrl,
+  DEFAULT_STAFF_BOOKINGS_LIMIT,
+  DEFAULT_STAFF_BOOKINGS_PAGE,
+  parseStaffBookingsSearchParams,
+  STAFF_BOOKINGS_PAGE_SIZE_OPTIONS,
+  type ParsedStaffBookingsParams,
+  type StaffBookingsPageSize,
+  type StaffBookingsUrlPatch,
+} from "./lib/staffBookingsParams";

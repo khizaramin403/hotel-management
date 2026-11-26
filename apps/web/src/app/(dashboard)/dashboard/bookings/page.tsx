@@ -1,12 +1,10 @@
-import { PageHeader } from "@/components/ui";
+import { Suspense } from "react";
+import { StaffBookingsSkeleton, StaffBookingsView } from "@/features/bookings";
 
 export default function DashboardBookingsPage() {
   return (
-    <section>
-      <PageHeader title="Bookings" variant="h3" />
-      <p className="mt-4 font-sans text-[14px] leading-[22px] text-muted">
-        Coming in the next steps.
-      </p>
-    </section>
+    <Suspense fallback={<StaffBookingsSkeleton />}>
+      <StaffBookingsView />
+    </Suspense>
   );
 }
