@@ -1,9 +1,11 @@
 import { Suspense } from "react";
 import {
+  DEFAULT_ROOMS_LIMIT,
   HeroSearchCard,
   HeroSearchCardFallback,
   HomeHero,
   HomeRoomsSection,
+  RoomGrid,
 } from "@/features/rooms";
 
 export default function HomePage() {
@@ -19,7 +21,9 @@ export default function HomePage() {
         <h2 className="m-0 mb-6 font-serif text-[24px] font-semibold leading-[32px] text-ink md:text-[28px] md:leading-[36px]">
           Available rooms
         </h2>
-        <HomeRoomsSection />
+        <Suspense fallback={<RoomGrid isLoading skeletonCount={DEFAULT_ROOMS_LIMIT} />}>
+          <HomeRoomsSection />
+        </Suspense>
       </section>
     </>
   );

@@ -135,6 +135,11 @@ const theme: ThemeConfig = {
     },
     Modal: { borderRadiusLG: 12 },
     Card: { borderRadiusLG: 12 },
+    Pagination: {
+      itemActiveBg: "#1F4D45",
+      itemActiveColor: "#FFFFFF",
+      itemActiveColorHover: "#FFFFFF",
+    },
     Skeleton: {
       gradientFromColor: "#EFEDE6",
       gradientToColor: "#F7F6F2",

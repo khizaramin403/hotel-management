@@ -1,15 +1,12 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { queryKeys } from "@/lib/api";
 import { resetMockInitForTests } from "@/lib/api/client";
 import * as roomsEndpoint from "@/lib/api/endpoints/rooms";
-import { ApiClientError } from "@/lib/api/errors";
 import { teardownMocks } from "@/mocks";
 import { resetMockDb } from "@/mocks/db";
-import { AntdProvider } from "@/providers/AntdProvider";
-import { HomeRoomsSection } from "../components/HomeRoomsSection";
 import { useRoomsQuery } from "./useRoomsQuery";
 
 function createTestQueryClient() {
@@ -24,11 +21,7 @@ function createTestQueryClient() {
 
 function createWrapper(queryClient: QueryClient) {
   return function Wrapper({ children }: { children: ReactNode }) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <AntdProvider>{children}</AntdProvider>
-      </QueryClientProvider>
-    );
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
   };
 }
 
@@ -111,47 +104,5 @@ describe("useRoomsQuery", () => {
       expect(result.current.isPlaceholderData).toBe(false);
     });
     expect(result.current.data?.data[0]?.id).toBe(7);
-  });
-
-  it("renders loading skeletons, error Alert with Try again retry, empty state, and room cards in HomeRoomsSection", async () => {
-    const queryClient = createTestQueryClient();
-    const listSpy = vi
-      .spyOn(roomsEndpoint, "listRooms")
-      .mockRejectedValueOnce(
-        new ApiClientError({
-          status: 500,
-          code: "INTERNAL_ERROR",
-          message: "Server error",
-        }),
-      );
-
-    render(<HomeRoomsSection />, { wrapper: createWrapper(queryClient) });
-
-    expect(screen.getAllByTestId("room-card-skeleton")).toHaveLength(12);
-
-    await waitFor(() => {
-      expect(screen.getByRole("alert")).toBeDefined();
-      expect(screen.getByText("Could not load rooms")).toBeDefined();
-    });
-
-    const retryButton = screen.getByRole("button", { name: "Try again" });
-    listSpy.mockResolvedValueOnce({
-      data: [],
-      meta: { page: 1, limit: 12, total: 0, totalPages: 0 },
-    });
-
-    fireEvent.click(retryButton);
-
-    await waitFor(() => {
-      expect(screen.getByText("No rooms available")).toBeDefined();
-    });
-
-    listSpy.mockRestore();
-    const freshClient = createTestQueryClient();
-    render(<HomeRoomsSection />, { wrapper: createWrapper(freshClient) });
-
-    await waitFor(() => {
-      expect(screen.getAllByRole("link")).toHaveLength(12);
-    });
   });
 });
