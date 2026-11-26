@@ -26,3 +26,4 @@ Step list and prompts: PROMPTS.md and the PHASE*_PROMPTS.md files.
 2026-11-26 | STEP 2.3 | Connected room type and price chips, sort Select, and centered Pagination to URL params and useRoomsQuery with empty clear-filters and error retry states plus tests
 2026-11-26 | STEP 2.4 | Built room detail left column on /rooms/[id] with useRoomQuery, 16:10 gallery and dynamic lightbox Modal, facility icon tags, 6-line Read more toggle, 404/error states, and tests
 2026-11-26 | STEP 2.5 | Built sticky BookingCard on /rooms/[id] with 300 ms debounced useRoomAvailabilityQuery, role-aware Book now actions, mobile 72px bottom bar and Drawer, and tests
+2026-11-26 | STEP 2.6 | Built /book/[roomId] Steps 1-2 with fresh availability re-check, Change links, React Hook Form + @hotel/shared guestDetailsSchema validation, sticky 4/12 summary card, sessionStorage bookingDraft persistence, and tests
