@@ -159,6 +159,20 @@ h3 {
   color: #ffffff;
 }
 
+.dashboard-compact-table .ant-table-thead > tr > th.ant-table-cell {
+  height: 48px;
+  padding: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: 0.02em;
+}
+
+.dashboard-compact-table .ant-table-tbody > tr > td.ant-table-cell {
+  height: 44px;
+  padding: 10px 12px;
+}
+
 @media (max-width: 768px) {
   .ant-btn {
     min-height: 44px;
