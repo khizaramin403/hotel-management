@@ -238,27 +238,26 @@ describe("AdminRoomsView", () => {
     expect(within(row101).getByText("PKR 6,000")).toBeDefined();
     expect(within(row101).getByText("Active")).toBeDefined();
 
-    // Primary 'Add room' opens placeholder Modal
+    // Primary 'Add room' loads and opens RoomFormModal via next/dynamic
     fireEvent.click(screen.getByRole("button", { name: "Add room" }));
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeDefined();
-      expect(
-        screen.getByText("The room create and edit form will be added in the next step."),
-      ).toBeDefined();
+      expect(screen.getByLabelText("Room number")).toBeDefined();
     });
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
     await waitFor(() => {
-      expect(screen.getByRole("dialog").className).toContain("ant-zoom-leave");
+      expect(screen.queryByRole("dialog")).toBeNull();
     });
 
-    // 'Edit' opens placeholder Modal for that room
+    // 'Edit' opens RoomFormModal pre-filled from GET /rooms/:id
     fireEvent.click(within(row101).getByRole("button", { name: "Edit" }));
     await waitFor(() => {
       expect(screen.getByText("Edit room 101")).toBeDefined();
+      expect((screen.getByLabelText("Room number") as HTMLInputElement).value).toBe("101");
     });
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
     await waitFor(() => {
-      expect(screen.getByRole("dialog").className).toContain("ant-zoom-leave");
+      expect(screen.queryByRole("dialog")).toBeNull();
     });
 
     // Delete calls Popconfirm 'Delete this room? This cannot be undone.' -> DELETE /rooms/:id + toast + setQueryData

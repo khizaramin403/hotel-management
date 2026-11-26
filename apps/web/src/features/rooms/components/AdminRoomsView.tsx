@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Room, RoomType } from "@hotel/shared";
 import { useQueryClient } from "@tanstack/react-query";
-import { App, Button, Modal, Popconfirm, Skeleton, Table, Tooltip } from "antd";
+import { App, Button, Popconfirm, Skeleton, Table, Tooltip } from "antd";
 import type { TableColumnsType } from "antd";
 import { EmptyState, ErrorState, PageHeader, RoomImage, StatusTag } from "@/components/ui";
 import { deactivateRoom, normalizeApiError } from "@/lib/api";
@@ -20,8 +21,19 @@ import {
 } from "../lib/adminRoomsParams";
 import { deactivateRoomInCache } from "../lib/roomCache";
 import { AdminRoomsFilterBar } from "./AdminRoomsFilterBar";
+import type { RoomFormModalMode } from "./RoomFormModal";
 
-type RoomModalMode = "create" | Room;
+const RoomFormModal = dynamic(
+  () => import("./RoomFormModal").then((mod) => mod.RoomFormModal),
+  {
+    ssr: false,
+    loading: () => (
+      <div role="status" aria-live="polite" aria-label="Loading room form" className="sr-only">
+        Loading room form...
+      </div>
+    ),
+  },
+);
 
 const SKELETON_ROWS = [1, 2, 3, 4, 5] as const;
 
@@ -71,8 +83,37 @@ export function AdminRoomsView() {
   const { data, isPending, isFetching, isPlaceholderData, isError, refetch } =
     useRoomsQuery(queryParams);
 
-  const [modalMode, setModalMode] = useState<RoomModalMode | null>(null);
+  const [modalMode, setModalMode] = useState<RoomFormModalMode | null>(null);
   const [deletingRoomId, setDeletingRoomId] = useState<number | null>(null);
+  const lastTriggerRef = useRef<HTMLElement | null>(null);
+
+  const captureActiveTrigger = useCallback(() => {
+    if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+      lastTriggerRef.current = document.activeElement;
+    } else {
+      lastTriggerRef.current = null;
+    }
+  }, []);
+
+  const handleOpenCreate = useCallback(() => {
+    captureActiveTrigger();
+    setModalMode("create");
+  }, [captureActiveTrigger]);
+
+  const handleOpenEdit = useCallback(
+    (room: Room) => {
+      captureActiveTrigger();
+      setModalMode(room);
+    },
+    [captureActiveTrigger],
+  );
+
+  const handleCloseModal = useCallback(() => {
+    setModalMode(null);
+    window.setTimeout(() => {
+      lastTriggerRef.current?.focus();
+    }, 0);
+  }, []);
 
   const rooms = data?.data ?? [];
   const total = data?.meta.total ?? 0;
@@ -229,7 +270,7 @@ export function AdminRoomsView() {
 
           return (
             <div className="inline-flex items-center justify-end gap-1">
-              <Button type="text" size="small" onClick={() => setModalMode(record)}>
+              <Button type="text" size="small" onClick={() => handleOpenEdit(record)}>
                 Edit
               </Button>
 
@@ -266,15 +307,8 @@ export function AdminRoomsView() {
         },
       },
     ],
-    [deletingRoomId, handleDeleteRoom],
+    [deletingRoomId, handleDeleteRoom, handleOpenEdit],
   );
-
-  const modalTitle =
-    modalMode === "create"
-      ? "Add room"
-      : modalMode
-        ? `Edit room ${modalMode.number}`
-        : "";
 
   return (
     <section className="space-y-6">
@@ -282,7 +316,7 @@ export function AdminRoomsView() {
         title="Rooms"
         variant="h3"
         action={
-          <Button type="primary" onClick={() => setModalMode("create")}>
+          <Button type="primary" onClick={handleOpenCreate}>
             Add room
           </Button>
         }
@@ -321,7 +355,7 @@ export function AdminRoomsView() {
               hasActiveFilters ? (
                 <Button onClick={handleClearFilters}>Clear filters</Button>
               ) : (
-                <Button type="primary" onClick={() => setModalMode("create")}>
+                <Button type="primary" onClick={handleOpenCreate}>
                   Add room
                 </Button>
               )
@@ -359,26 +393,7 @@ export function AdminRoomsView() {
         </div>
       )}
 
-      <Modal
-        open={modalMode !== null}
-        width={520}
-        onCancel={() => setModalMode(null)}
-        title={
-          <span className="font-serif text-[22px] font-medium leading-[30px] text-ink">
-            {modalTitle}
-          </span>
-        }
-        footer={
-          <div className="flex justify-end gap-3">
-            <Button onClick={() => setModalMode(null)}>Cancel</Button>
-          </div>
-        }
-        destroyOnHidden
-      >
-        <p className="m-0 font-sans text-[14px] leading-[22px] text-muted">
-          The room create and edit form will be added in the next step.
-        </p>
-      </Modal>
+      {modalMode !== null ? <RoomFormModal mode={modalMode} onClose={handleCloseModal} /> : null}
     </section>
   );
 }
