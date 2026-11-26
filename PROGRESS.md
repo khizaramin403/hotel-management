@@ -24,3 +24,4 @@ Step list and prompts: PROMPTS.md and the PHASE*_PROMPTS.md files.
 2026-11-26 | STEP 2.1 | Built RoomCard, RoomCardSkeleton, responsive RoomGrid, and useRoomsQuery hook with temporary home page loading, empty, and error states plus unit tests
 2026-11-26 | STEP 2.2 | Built HomeHero and overlapping HeroSearchCard with DatePicker.generatePicker RangePicker, 1-6 guests stepper, room type Select, URL query sync, and unit tests
 2026-11-26 | STEP 2.3 | Connected room type and price chips, sort Select, and centered Pagination to URL params and useRoomsQuery with empty clear-filters and error retry states plus tests
+2026-11-26 | STEP 2.4 | Built room detail left column on /rooms/[id] with useRoomQuery, 16:10 gallery and dynamic lightbox Modal, facility icon tags, 6-line Read more toggle, 404/error states, and tests
