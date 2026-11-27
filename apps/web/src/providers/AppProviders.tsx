@@ -15,10 +15,15 @@ import {
   setAuthLoading,
   setAuthUser,
 } from "@/store/slices/authSlice";
-import { resetCall } from "@/store/slices/callSlice";
+import { resetCall, selectCallStatus } from "@/store/slices/callSlice";
 import { resetChat } from "@/store/slices/chatSlice";
 import { AntdProvider } from "./AntdProvider";
 import { SocketProvider } from "./SocketProvider";
+
+const DynamicCallPopup = dynamic(
+  () => import("@/features/chat/components/CallPopup").then((mod) => mod.CallPopup),
+  { ssr: false },
+);
 
 const ReactQueryDevtools =
   process.env.NODE_ENV === "development"
@@ -46,12 +51,18 @@ export function makeQueryClient() {
 function AuthenticatedSocketGate({ children }: Readonly<{ children: ReactNode }>) {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const userId = useAppSelector((state) => state.auth.user?.id ?? null);
+  const callStatus = useAppSelector(selectCallStatus);
 
   if (!isAuthenticated || userId === null) {
     return <>{children}</>;
   }
 
-  return <SocketProvider key={userId}>{children}</SocketProvider>;
+  return (
+    <SocketProvider key={userId}>
+      {children}
+      {callStatus !== "idle" ? <DynamicCallPopup /> : null}
+    </SocketProvider>
+  );
 }
 
 export function AppProviders({ children }: Readonly<{ children: ReactNode }>) {

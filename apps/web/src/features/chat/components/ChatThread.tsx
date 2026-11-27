@@ -21,14 +21,16 @@ import {
   type ServerSocketHandler,
 } from "@/lib/socket";
 import { useSocket } from "@/providers/SocketProvider";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/store/hooks";
 import { selectAuthUser } from "@/store/slices/authSlice";
-import { setActiveConversation } from "@/store/slices/chatSlice";
+import { selectCallStatus } from "@/store/slices/callSlice";
+import { setActiveConversation, type ChatSystemEvent } from "@/store/slices/chatSlice";
 import {
   flattenChronologicalMessages,
   useConversationMessagesInfiniteQuery,
 } from "../hooks/useChatQueries";
-import { groupChatMessages, type ThreadMessageItem } from "../lib/chatFormat";
+import { initiateOutgoingCall } from "../lib/callSignaling";
+import { groupChatMessages, type GroupedThreadItem, type ThreadMessageItem } from "../lib/chatFormat";
 import { ChatInputBar } from "./ChatInputBar";
 import { ChatMessage } from "./ChatMessage";
 import { TypingIndicatorBubble } from "./TypingIndicatorBubble";
@@ -38,6 +40,22 @@ interface OptimisticEntry extends ThreadMessageItem {
   deliveryStatus: "sending" | "failed";
   confirmedId?: number;
 }
+
+type ThreadTimelineEntry =
+  | {
+      kind: "message";
+      key: number;
+      sortTimeMs: number;
+      grouped: GroupedThreadItem;
+    }
+  | {
+      kind: "system";
+      key: string;
+      sortTimeMs: number;
+      text: string;
+    };
+
+const EMPTY_SYSTEM_EVENTS: readonly ChatSystemEvent[] = [];
 
 export interface ChatThreadProps {
   conversation: Conversation;
@@ -76,11 +94,16 @@ export function ChatThread({
   onCall,
 }: ChatThreadProps) {
   const dispatch = useAppDispatch();
+  const store = useAppStore();
   const queryClient = useQueryClient();
   const socket = useSocket();
   const currentUser = useAppSelector(selectAuthUser);
+  const callStatus = useAppSelector(selectCallStatus);
   const isPeerTyping = useAppSelector((state) =>
     Boolean(state.chat.typingByConversation[conversation.id]),
+  );
+  const systemEvents = useAppSelector(
+    (state) => state.chat.systemEventsByConversation[conversation.id] ?? EMPTY_SYSTEM_EVENTS,
   );
 
   const [optimisticEntries, setOptimisticEntries] = useState<OptimisticEntry[]>([]);
@@ -90,8 +113,8 @@ export function ChatThread({
   const scrollParentRef = useRef<HTMLDivElement | null>(null);
   const isNearBottomRef = useRef(true);
   const initialScrollDoneRef = useRef(false);
-  const prevFirstIdRef = useRef<number | null>(null);
-  const prevLastIdRef = useRef<number | null>(null);
+  const prevFirstKeyRef = useRef<string | number | null>(null);
+  const prevLastKeyRef = useRef<string | number | null>(null);
   const prevScrollHeightRef = useRef(0);
   const optimisticSeqRef = useRef(0);
 
@@ -110,15 +133,50 @@ export function ChatThread({
 
   const groupedItems = useMemo(() => groupChatMessages(mergedMessages), [mergedMessages]);
 
+  const timelineEntries = useMemo<ThreadTimelineEntry[]>(() => {
+    if (systemEvents.length === 0) {
+      return groupedItems.map((grouped) => ({
+        kind: "message",
+        key: grouped.message.id,
+        sortTimeMs: Date.parse(grouped.message.createdAt) || 0,
+        grouped,
+      }));
+    }
+
+    const messageEntries: ThreadTimelineEntry[] = groupedItems.map((grouped) => ({
+      kind: "message",
+      key: grouped.message.id,
+      sortTimeMs: Date.parse(grouped.message.createdAt) || 0,
+      grouped,
+    }));
+
+    const systemEntries: ThreadTimelineEntry[] = systemEvents.map((event) => ({
+      kind: "system",
+      key: event.id,
+      sortTimeMs: Date.parse(event.createdAt) || 0,
+      text: event.text,
+    }));
+
+    return [...messageEntries, ...systemEntries].sort((a, b) => {
+      if (a.sortTimeMs !== b.sortTimeMs) {
+        return a.sortTimeMs - b.sortTimeMs;
+      }
+      if (a.kind !== b.kind) {
+        return a.kind === "message" ? -1 : 1;
+      }
+      return 0;
+    });
+  }, [groupedItems, systemEvents]);
+
   // @tanstack/react-virtual exposes mutable measurement callbacks intentionally.
   // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
-    count: groupedItems.length,
+    count: timelineEntries.length,
     getScrollElement: () => scrollParentRef.current,
     estimateSize: () => 84,
     overscan: 8,
     initialRect: { width: 640, height: 480 },
-    getItemKey: (index) => groupedItems[index]?.message.id ?? index,
+    getItemKey: (index) => timelineEntries[index]?.key ?? index,
   });
 
   const isSocketConnected = socket !== null && (connectedSocket === socket || socket.isConnected());
@@ -183,40 +241,40 @@ export function ChatThread({
 
   const scrollToBottom = useCallback(() => {
     const scrollEl = scrollParentRef.current;
-    if (groupedItems.length > 0) {
-      virtualizer.scrollToIndex(groupedItems.length - 1, { align: "end" });
+    if (timelineEntries.length > 0) {
+      virtualizer.scrollToIndex(timelineEntries.length - 1, { align: "end" });
     }
     if (scrollEl && scrollEl.scrollHeight > scrollEl.clientHeight) {
       scrollEl.scrollTop = scrollEl.scrollHeight;
     }
     isNearBottomRef.current = true;
     setHasNewMessagesBelow(false);
-  }, [groupedItems.length, virtualizer]);
+  }, [timelineEntries.length, virtualizer]);
 
   useLayoutEffect(() => {
     const scrollEl = scrollParentRef.current;
-    const firstId = groupedItems[0]?.message.id ?? null;
-    const lastItem = groupedItems[groupedItems.length - 1];
-    const lastId = lastItem?.message.id ?? null;
+    const firstKey = timelineEntries[0]?.key ?? null;
+    const lastEntry = timelineEntries[timelineEntries.length - 1];
+    const lastKey = lastEntry?.key ?? null;
 
-    if (!initialScrollDoneRef.current && groupedItems.length > 0) {
+    if (!initialScrollDoneRef.current && timelineEntries.length > 0) {
       initialScrollDoneRef.current = true;
-      virtualizer.scrollToIndex(groupedItems.length - 1, { align: "end" });
+      virtualizer.scrollToIndex(timelineEntries.length - 1, { align: "end" });
       if (scrollEl && scrollEl.scrollHeight > scrollEl.clientHeight) {
         scrollEl.scrollTop = scrollEl.scrollHeight;
       }
       isNearBottomRef.current = true;
-      prevFirstIdRef.current = firstId;
-      prevLastIdRef.current = lastId;
+      prevFirstKeyRef.current = firstKey;
+      prevLastKeyRef.current = lastKey;
       return;
     }
 
     // Preserve scroll anchor when older history pages prepend at top
     if (
-      firstId !== null &&
-      prevFirstIdRef.current !== null &&
-      firstId !== prevFirstIdRef.current &&
-      lastId === prevLastIdRef.current &&
+      firstKey !== null &&
+      prevFirstKeyRef.current !== null &&
+      firstKey !== prevFirstKeyRef.current &&
+      lastKey === prevLastKeyRef.current &&
       scrollEl &&
       prevScrollHeightRef.current > 0
     ) {
@@ -225,10 +283,12 @@ export function ChatThread({
         scrollEl.scrollTop += heightDelta;
       }
       prevScrollHeightRef.current = 0;
-    } else if (lastId !== null && lastId !== prevLastIdRef.current) {
-      const isOwnLast = lastItem?.message.senderId === currentUserId;
-      if (isOwnLast || isNearBottomRef.current) {
-        virtualizer.scrollToIndex(groupedItems.length - 1, { align: "end" });
+    } else if (lastKey !== null && lastKey !== prevLastKeyRef.current) {
+      const isOwnLast =
+        lastEntry?.kind === "message" && lastEntry.grouped.message.senderId === currentUserId;
+      const isSystemLast = lastEntry?.kind === "system";
+      if (isOwnLast || isSystemLast || isNearBottomRef.current) {
+        virtualizer.scrollToIndex(timelineEntries.length - 1, { align: "end" });
         if (scrollEl && scrollEl.scrollHeight > scrollEl.clientHeight) {
           scrollEl.scrollTop = scrollEl.scrollHeight;
         }
@@ -236,9 +296,9 @@ export function ChatThread({
       }
     }
 
-    prevFirstIdRef.current = firstId;
-    prevLastIdRef.current = lastId;
-  }, [currentUserId, groupedItems, virtualizer]);
+    prevFirstKeyRef.current = firstKey;
+    prevLastKeyRef.current = lastKey;
+  }, [currentUserId, timelineEntries, virtualizer]);
 
   // Keep bottom aligned when typing indicator appears while near bottom
   useLayoutEffect(() => {
@@ -420,7 +480,20 @@ export function ChatThread({
         <Button
           type="default"
           icon={<PhoneOutlined aria-hidden="true" />}
-          onClick={() => onCall?.(conversation)}
+          disabled={!isSocketConnected || callStatus === "ringing" || callStatus === "connected"}
+          onClick={() => {
+            if (onCall) {
+              onCall(conversation);
+              return;
+            }
+            void initiateOutgoingCall({
+              conversationId: conversation.id,
+              peerName,
+              dispatch,
+              getState: store.getState,
+              socket,
+            });
+          }}
         >
           Call
         </Button>
@@ -458,7 +531,7 @@ export function ChatThread({
           data-testid="chat-messages-scroll"
           className="min-h-0 flex-1 overflow-y-auto bg-canvas px-4 py-4 md:px-6"
         >
-          {groupedItems.length === 0 && !isPeerTyping ? (
+          {timelineEntries.length === 0 && !isPeerTyping ? (
             <div className="flex h-full items-center justify-center">
               <EmptyState
                 title="No messages yet. Say hello."
@@ -481,17 +554,14 @@ export function ChatThread({
                 }}
               >
                 {virtualizer.getVirtualItems().map((virtualRow) => {
-                  const item = groupedItems[virtualRow.index];
-                  if (!item) {
+                  const entry = timelineEntries[virtualRow.index];
+                  if (!entry) {
                     return null;
                   }
 
-                  const isOwn = item.message.senderId === currentUserId;
-                  const senderLabel = isOwn ? "You" : peerName;
-
                   return (
                     <div
-                      key={item.message.id}
+                      key={entry.key}
                       ref={virtualizer.measureElement}
                       data-index={virtualRow.index}
                       style={{
@@ -502,20 +572,32 @@ export function ChatThread({
                         transform: `translateY(${virtualRow.start}px)`,
                       }}
                     >
-                      <ChatMessage
-                        key={item.message.id}
-                        messageId={item.message.id}
-                        text={item.message.text}
-                        createdAt={item.message.createdAt}
-                        isOwn={isOwn}
-                        senderLabel={senderLabel}
-                        datePillLabel={item.showDatePill ? item.datePillLabel : undefined}
-                        isGroupedWithPrevious={item.isGroupedWithPrevious}
-                        showTimestamp={item.showTimestamp}
-                        deliveryStatus={item.message.deliveryStatus}
-                        clientId={item.message.clientId}
-                        onRetry={handleRetryMessage}
-                      />
+                      {entry.kind === "system" ? (
+                        <div className="flex justify-center pt-4" data-system-event-id={entry.key}>
+                          <span className="rounded-full bg-neutral-100 px-3 py-0.5 font-sans text-[12px] leading-[18px] text-muted">
+                            {entry.text}
+                          </span>
+                        </div>
+                      ) : (
+                        <ChatMessage
+                          key={entry.grouped.message.id}
+                          messageId={entry.grouped.message.id}
+                          text={entry.grouped.message.text}
+                          createdAt={entry.grouped.message.createdAt}
+                          isOwn={entry.grouped.message.senderId === currentUserId}
+                          senderLabel={
+                            entry.grouped.message.senderId === currentUserId ? "You" : peerName
+                          }
+                          datePillLabel={
+                            entry.grouped.showDatePill ? entry.grouped.datePillLabel : undefined
+                          }
+                          isGroupedWithPrevious={entry.grouped.isGroupedWithPrevious}
+                          showTimestamp={entry.grouped.showTimestamp}
+                          deliveryStatus={entry.grouped.message.deliveryStatus}
+                          clientId={entry.grouped.message.clientId}
+                          onRetry={handleRetryMessage}
+                        />
+                      )}
                     </div>
                   );
                 })}

@@ -2,6 +2,14 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { getCallEngine } from "@/features/chat/lib/callEngine";
+import {
+  clearPendingCallOffers,
+  finalizeCallEnded,
+  handleAnsweredCallSocketEvent,
+  handleIncomingCallSocketEvent,
+  resolveCallPeerName,
+} from "@/features/chat/lib/callSignaling";
 import {
   createSocketClient,
   upsertConversationInCache,
@@ -76,16 +84,64 @@ export function SocketProvider({ children, client }: SocketProviderProps) {
       upsertConversationInCache(queryClient, conversation);
     };
 
+    const handleCallIncoming: ServerSocketHandler<"call:incoming"> = (payload) => {
+      const currentRole = store.getState().auth.user?.role;
+      const peerName = resolveCallPeerName(queryClient, currentRole, payload.conversationId);
+      handleIncomingCallSocketEvent({
+        conversationId: payload.conversationId,
+        sdp: payload.sdp,
+        peerName,
+        dispatch,
+        getState: store.getState,
+      });
+    };
+
+    const handleCallAnswered: ServerSocketHandler<"call:answered"> = (payload) => {
+      void handleAnsweredCallSocketEvent({
+        conversationId: payload.conversationId,
+        sdp: payload.sdp,
+        dispatch,
+        getState: store.getState,
+      });
+    };
+
+    const handleCallIce: ServerSocketHandler<"call:ice"> = (payload) => {
+      if (store.getState().call.conversationId !== payload.conversationId) {
+        return;
+      }
+      void getCallEngine().addIceCandidate(payload.candidate);
+    };
+
+    const handleCallTerminated: ServerSocketHandler<"call:ended"> = (payload) => {
+      finalizeCallEnded({
+        dispatch,
+        getState: store.getState,
+        conversationId: payload.conversationId,
+      });
+    };
+
     activeClient.on("message:new", handleMessageNew);
     activeClient.on("typing", handleTyping);
     activeClient.on("conversation:updated", handleConversationUpdated);
+    activeClient.on("call:incoming", handleCallIncoming);
+    activeClient.on("call:answered", handleCallAnswered);
+    activeClient.on("call:ice", handleCallIce);
+    activeClient.on("call:rejected", handleCallTerminated);
+    activeClient.on("call:ended", handleCallTerminated);
     activeClient.connect();
 
     return () => {
       activeClient.off("message:new", handleMessageNew);
       activeClient.off("typing", handleTyping);
       activeClient.off("conversation:updated", handleConversationUpdated);
+      activeClient.off("call:incoming", handleCallIncoming);
+      activeClient.off("call:answered", handleCallAnswered);
+      activeClient.off("call:ice", handleCallIce);
+      activeClient.off("call:rejected", handleCallTerminated);
+      activeClient.off("call:ended", handleCallTerminated);
       activeClient.disconnect();
+      clearPendingCallOffers();
+      getCallEngine().cleanup();
     };
   }, [activeClient, dispatch, queryClient, store]);
 

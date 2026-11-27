@@ -1,15 +1,24 @@
 import { createSelector, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
+export interface ChatSystemEvent {
+  id: string;
+  conversationId: number;
+  text: string;
+  createdAt: string;
+}
+
 export interface ChatState {
   activeConversationId: number | null;
   unreadByConversation: Record<number, number>;
   typingByConversation: Record<number, boolean>;
+  systemEventsByConversation: Record<number, ChatSystemEvent[]>;
 }
 
 const initialState: ChatState = {
   activeConversationId: null,
   unreadByConversation: {},
   typingByConversation: {},
+  systemEventsByConversation: {},
 };
 
 const chatSlice = createSlice({
@@ -38,6 +47,13 @@ const chatSlice = createSlice({
     ) {
       state.typingByConversation[action.payload.conversationId] = action.payload.isTyping;
     },
+    addChatSystemEvent(state, action: PayloadAction<ChatSystemEvent>) {
+      const { conversationId, id } = action.payload;
+      const existing = state.systemEventsByConversation[conversationId] ?? [];
+      if (!existing.some((event) => event.id === id)) {
+        state.systemEventsByConversation[conversationId] = [...existing, action.payload];
+      }
+    },
     resetChat() {
       return initialState;
     },
@@ -50,6 +66,7 @@ export const {
   incrementConversationUnread,
   clearConversationUnread,
   setConversationTyping,
+  addChatSystemEvent,
   resetChat,
 } = chatSlice.actions;
 export const chatReducer = chatSlice.reducer;
@@ -60,6 +77,8 @@ export const selectUnreadByConversation = (state: { chat: ChatState }) =>
   state.chat.unreadByConversation;
 export const selectTypingByConversation = (state: { chat: ChatState }) =>
   state.chat.typingByConversation;
+export const selectSystemEventsByConversation = (state: { chat: ChatState }) =>
+  state.chat.systemEventsByConversation;
 
 export const selectTotalUnreadCount = createSelector(
   [selectUnreadByConversation],

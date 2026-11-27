@@ -1,3 +1,4 @@
+export { CALL_ENDED_DISMISS_MS, CallPopup } from "./components/CallPopup";
 export {
   ChatInputBar,
   MAX_MESSAGE_LENGTH,
@@ -32,3 +33,26 @@ export {
   type MessageDeliveryStatus,
   type ThreadMessageItem,
 } from "./lib/chatFormat";
+export {
+  MockCallEngine,
+  computeElapsedCallSeconds,
+  formatCallDuration,
+  getCallEngine,
+  resetCallEngine,
+  setCallEngine,
+  type CallEngine,
+} from "./lib/callEngine";
+export {
+  acceptIncomingCallFlow,
+  clearPendingCallOffers,
+  consumePendingCallOffer,
+  declineIncomingCallFlow,
+  endActiveCallFlow,
+  finalizeCallEnded,
+  handleAnsweredCallSocketEvent,
+  handleIncomingCallSocketEvent,
+  initiateOutgoingCall,
+  resolveCallPeerName,
+  setPendingCallOffer,
+  toggleCallMuteFlow,
+} from "./lib/callSignaling";
