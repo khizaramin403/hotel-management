@@ -250,6 +250,36 @@ h3 {
   animation: chat-typing-pulse 1.2s ease-in-out infinite;
 }
 
+.notification-bell-badge .ant-badge-count {
+  background-color: #1f4d45;
+  color: #ffffff;
+  box-shadow: 0 0 0 1px #ffffff;
+}
+
+.ant-notification .ant-notification-notice-wrapper {
+  border-radius: 8px;
+  border: 1px solid #e7e5df;
+  box-shadow: 0 6px 16px rgba(20, 49, 44, 0.12);
+}
+
+.ant-notification .ant-notification-notice {
+  background-color: #ffffff;
+  border-radius: 8px;
+}
+
+.ant-notification .ant-notification-notice-message {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: #1f2933;
+}
+
+.ant-notification .ant-notification-notice-description {
+  font-size: 13px;
+  line-height: 20px;
+  color: #5b6472;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

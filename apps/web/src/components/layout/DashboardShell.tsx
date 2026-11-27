@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  BellOutlined,
   HomeOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
@@ -14,7 +13,6 @@ import {
 } from "@ant-design/icons";
 import {
   Avatar,
-  Badge,
   Button,
   Drawer,
   Dropdown,
@@ -23,6 +21,7 @@ import {
   Tooltip,
   type MenuProps,
 } from "antd";
+import { NotificationBell } from "@/features/notifications";
 import {
   getDashboardNavItems,
   getDashboardPageTitle,
@@ -189,16 +188,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
           </div>
 
           <div className="flex items-center gap-3">
-            <Tooltip title="Notifications">
-              <Badge dot={false}>
-                <Button
-                  type="text"
-                  icon={<BellOutlined className="text-[24px]" aria-hidden="true" />}
-                  aria-label="Notifications"
-                  className="min-h-[44px] min-w-[44px] md:min-h-[40px] md:min-w-[40px]"
-                />
-              </Badge>
-            </Tooltip>
+            <NotificationBell />
 
             {user ? (
               <Dropdown

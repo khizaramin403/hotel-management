@@ -160,7 +160,7 @@ export function AntdProvider({ children }: Readonly<{ children: React.ReactNode 
   return (
     <AntdRegistry>
       <ConfigProvider theme={theme}>
-        <App>{children}</App>
+        <App notification={{ placement: "topRight", duration: 6 }}>{children}</App>
       </ConfigProvider>
     </AntdRegistry>
   );

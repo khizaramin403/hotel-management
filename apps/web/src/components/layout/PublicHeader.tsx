@@ -12,6 +12,7 @@ import {
   MessageOutlined,
 } from "@ant-design/icons";
 import { Avatar, Button, Drawer, Dropdown, Skeleton, Tooltip, type MenuProps } from "antd";
+import { NotificationBell } from "@/features/notifications";
 import { PUBLIC_NAV_ITEMS, getPostLoginHome } from "@/lib/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectAuthStatus, selectAuthUser } from "@/store/slices/authSlice";
@@ -111,23 +112,27 @@ export function PublicHeader() {
           {isAuthPending ? (
             <Skeleton.Button active size="small" />
           ) : user ? (
-            <Dropdown menu={{ items: dropdownItems }} trigger={["click"]} placement="bottomRight">
-              <button
-                type="button"
-                aria-label="Account menu"
-                className="flex min-h-[44px] cursor-pointer items-center gap-2 rounded-md border border-transparent bg-transparent px-2 py-1 text-left transition-colors hover:bg-green-50 lg:min-h-[40px]"
-              >
-                <Avatar
-                  size={32}
-                  className="bg-green-600 font-sans text-[13px] font-medium text-neutral-0"
+            <>
+              <NotificationBell />
+
+              <Dropdown menu={{ items: dropdownItems }} trigger={["click"]} placement="bottomRight">
+                <button
+                  type="button"
+                  aria-label="Account menu"
+                  className="flex min-h-[44px] cursor-pointer items-center gap-2 rounded-md border border-transparent bg-transparent px-2 py-1 text-left transition-colors hover:bg-green-50 lg:min-h-[40px]"
                 >
-                  {getUserInitials(user.name)}
-                </Avatar>
-                <span className="hidden font-sans text-[14px] font-medium text-ink sm:inline">
-                  {user.name}
-                </span>
-              </button>
-            </Dropdown>
+                  <Avatar
+                    size={32}
+                    className="bg-green-600 font-sans text-[13px] font-medium text-neutral-0"
+                  >
+                    {getUserInitials(user.name)}
+                  </Avatar>
+                  <span className="hidden font-sans text-[14px] font-medium text-ink sm:inline">
+                    {user.name}
+                  </span>
+                </button>
+              </Dropdown>
+            </>
           ) : (
             <Button
               type="primary"

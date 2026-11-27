@@ -17,6 +17,7 @@ import {
 } from "@/store/slices/authSlice";
 import { resetCall, selectCallStatus } from "@/store/slices/callSlice";
 import { resetChat } from "@/store/slices/chatSlice";
+import { resetNotifications } from "@/store/slices/notificationsSlice";
 import { AntdProvider } from "./AntdProvider";
 import { SocketProvider } from "./SocketProvider";
 
@@ -78,6 +79,7 @@ export function AppProviders({ children }: Readonly<{ children: ReactNode }>) {
         store.dispatch(clearAuth());
         store.dispatch(resetChat());
         store.dispatch(resetCall());
+        store.dispatch(resetNotifications());
       },
     });
 

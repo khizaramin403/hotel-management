@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { App } from "antd";
 import { getCallEngine } from "@/features/chat/lib/callEngine";
 import {
   clearPendingCallOffers,
@@ -10,6 +11,11 @@ import {
   handleIncomingCallSocketEvent,
   resolveCallPeerName,
 } from "@/features/chat/lib/callSignaling";
+import { observeBookingQueryNotifications } from "@/features/notifications/lib/bookingNotifications";
+import {
+  formatChatNotificationSnippet,
+  resolveChatNotificationSender,
+} from "@/features/notifications/lib/chatNotifications";
 import {
   createSocketClient,
   upsertConversationInCache,
@@ -19,6 +25,7 @@ import {
 } from "@/lib/socket";
 import { useAppDispatch, useAppStore } from "@/store/hooks";
 import { incrementConversationUnread, setConversationTyping } from "@/store/slices/chatSlice";
+import { addNotification } from "@/store/slices/notificationsSlice";
 
 const MAX_SEEN_MESSAGE_IDS = 500;
 
@@ -35,6 +42,24 @@ export function SocketProvider({ children, client }: SocketProviderProps) {
   const dispatch = useAppDispatch();
   const store = useAppStore();
   const queryClient = useQueryClient();
+  const { notification } = App.useApp();
+  const notificationRef = useRef(notification);
+
+  useEffect(() => {
+    notificationRef.current = notification;
+  }, [notification]);
+
+  useEffect(() => {
+    const unsubscribeBookingNotifications = observeBookingQueryNotifications(
+      queryClient,
+      dispatch,
+      store.getState,
+    );
+
+    return () => {
+      unsubscribeBookingNotifications();
+    };
+  }, [dispatch, queryClient, store]);
 
   useEffect(() => {
     const seenMessageIds = new Set<number>();
@@ -61,6 +86,25 @@ export function SocketProvider({ children, client }: SocketProviderProps) {
         activeConversationId !== message.conversationId
       ) {
         dispatch(incrementConversationUnread(message.conversationId));
+
+        const senderLabel = resolveChatNotificationSender(queryClient, message);
+        const snippet = formatChatNotificationSnippet(message.text);
+
+        dispatch(
+          addNotification({
+            id: `chat-msg-${message.id}`,
+            type: "chat_message",
+            text: `${senderLabel}: ${snippet}`,
+            createdAt: message.createdAt,
+          }),
+        );
+
+        notificationRef.current?.info?.({
+          message: `New message from ${senderLabel}`,
+          description: snippet,
+          placement: "topRight",
+          duration: 6,
+        });
       }
     };
 

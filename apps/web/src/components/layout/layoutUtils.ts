@@ -5,6 +5,7 @@ import type { AppDispatch } from "@/store";
 import { clearAuth } from "@/store/slices/authSlice";
 import { resetCall } from "@/store/slices/callSlice";
 import { resetChat } from "@/store/slices/chatSlice";
+import { resetNotifications } from "@/store/slices/notificationsSlice";
 
 export function getUserInitials(name: string): string {
   const parts = name
@@ -33,6 +34,7 @@ export async function performClientLogout(
     dispatch(clearAuth());
     dispatch(resetChat());
     dispatch(resetCall());
+    dispatch(resetNotifications());
     queryClient?.clear();
   }
 }
