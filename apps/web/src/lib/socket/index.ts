@@ -31,7 +31,11 @@ export function createSocketClient(): SocketClient {
 }
 
 export { RealSocket } from "./realSocket";
-export { upsertConversationInCache, upsertMessageInCache } from "./chatCache";
+export {
+  clearConversationUnreadInCache,
+  upsertConversationInCache,
+  upsertMessageInCache,
+} from "./chatCache";
 export type {
   CallAnsweredPayload,
   CallIcePayload,

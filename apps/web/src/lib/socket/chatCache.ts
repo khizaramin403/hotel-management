@@ -183,3 +183,35 @@ export function upsertConversationInCache(
     });
   }
 }
+
+/** Sets `unreadCount` to 0 on a cached conversation via `queryClient.setQueryData`. */
+export function clearConversationUnreadInCache(
+  queryClient: QueryClient,
+  conversationId: number,
+): void {
+  const queries = queryClient.getQueryCache().findAll({
+    queryKey: ["chat", "conversations"],
+  });
+
+  for (const query of queries) {
+    queryClient.setQueryData<ConversationsListResult | undefined>(query.queryKey, (previous) => {
+      if (!previous) {
+        return previous;
+      }
+
+      const target = previous.data.find((conversation) => conversation.id === conversationId);
+      if (!target || target.unreadCount === 0) {
+        return previous;
+      }
+
+      return {
+        ...previous,
+        data: previous.data.map((conversation) =>
+          conversation.id === conversationId
+            ? { ...conversation, unreadCount: 0 }
+            : conversation,
+        ),
+      };
+    });
+  }
+}

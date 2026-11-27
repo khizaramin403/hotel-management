@@ -1,12 +1,5 @@
-import { PageHeader } from "@/components/ui";
+import { StaffChatView } from "@/features/chat";
 
 export default function DashboardChatPage() {
-  return (
-    <section>
-      <PageHeader title="Chat" variant="h3" />
-      <p className="mt-4 font-sans text-[14px] leading-[22px] text-muted">
-        Coming in the next steps.
-      </p>
-    </section>
-  );
+  return <StaffChatView />;
 }
