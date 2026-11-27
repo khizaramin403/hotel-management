@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
@@ -33,6 +33,7 @@ export function PublicHeader() {
   const user = useAppSelector(selectAuthUser);
   const authStatus = useAppSelector(selectAuthStatus);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const mobileDrawerTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   const isAuthPending = authStatus === "idle" || authStatus === "loading";
 
@@ -145,6 +146,7 @@ export function PublicHeader() {
 
           <Tooltip title="Open navigation menu">
             <Button
+              ref={mobileDrawerTriggerRef}
               type="text"
               icon={<MenuOutlined className="text-[24px]" aria-hidden="true" />}
               aria-label="Open navigation menu"
@@ -160,7 +162,14 @@ export function PublicHeader() {
         placement="right"
         width={280}
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        onClose={() => {
+          setDrawerOpen(false);
+          window.setTimeout(() => {
+            if (mobileDrawerTriggerRef.current?.isConnected) {
+              mobileDrawerTriggerRef.current.focus();
+            }
+          }, 0);
+        }}
       >
         <nav aria-label="Mobile" className="flex flex-col gap-1">
           {PUBLIC_NAV_ITEMS.map((item) => {

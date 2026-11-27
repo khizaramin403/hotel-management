@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import type { Booking } from "@hotel/shared";
 import { Button, Drawer, Popconfirm } from "antd";
 import { Price, StatusTag } from "@/components/ui";
@@ -39,6 +40,30 @@ export function BookingDetailDrawer({
   const pricePerNight =
     booking && booking.nights > 0 ? Math.round(booking.subtotal / booking.nights) : 0;
 
+  const isOpen = booking !== null;
+  const wasOpenRef = useRef(false);
+  const triggerRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (isOpen && !wasOpenRef.current) {
+      if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+        triggerRef.current = document.activeElement;
+      } else {
+        triggerRef.current = null;
+      }
+    }
+    wasOpenRef.current = isOpen;
+  }, [isOpen]);
+
+  const handleClose = () => {
+    onClose();
+    window.setTimeout(() => {
+      if (triggerRef.current?.isConnected) {
+        triggerRef.current.focus();
+      }
+    }, 0);
+  };
+
   return (
     <Drawer
       title={
@@ -48,8 +73,8 @@ export function BookingDetailDrawer({
       }
       placement="right"
       width={420}
-      open={booking !== null}
-      onClose={onClose}
+      open={isOpen}
+      onClose={handleClose}
       destroyOnHidden
       styles={{
         wrapper: { maxWidth: "100vw" },

@@ -128,7 +128,7 @@ export function ChatInputBar({
           disabled={disabled}
           maxLength={MAX_MESSAGE_LENGTH}
           autoSize={{ minRows: 1, maxRows: 4 }}
-          className="flex-1 rounded-md border-line-strong font-sans text-[14px] leading-[22px] text-ink"
+          className="flex-1 rounded-md border-line-strong font-sans !text-[16px] leading-[22px] text-ink md:!text-[14px]"
           onChange={(event) => {
             const nextValue = event.target.value;
             setText(nextValue);
@@ -143,7 +143,7 @@ export function ChatInputBar({
             icon={<SendOutlined aria-hidden="true" />}
             aria-label="Send message"
             disabled={!canSend}
-            className="!h-10 !w-10 !min-h-[40px] !min-w-[40px] shrink-0"
+            className="!h-11 !w-11 !min-h-[44px] !min-w-[44px] shrink-0 md:!h-10 md:!w-10 md:!min-h-[40px] md:!min-w-[40px]"
             onClick={submitMessage}
           />
         </Tooltip>

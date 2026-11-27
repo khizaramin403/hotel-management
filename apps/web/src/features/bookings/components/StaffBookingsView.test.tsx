@@ -462,4 +462,28 @@ describe("StaffBookingsView", () => {
       expect(within(screen.getByTestId("staff-bookings-table")).getByText("BK-3001")).toBeDefined();
     });
   });
+
+  it("closes BookingDetailDrawer via Escape and returns focus to the triggering View button", async () => {
+    renderStaffBookings();
+
+    const tableRegion = await screen.findByTestId("staff-bookings-table");
+    const row1040 = within(tableRegion).getByText("BK-1040").closest("tr") as HTMLElement;
+    const viewButton = within(row1040).getByRole("button", { name: "View" });
+
+    viewButton.focus();
+    expect(document.activeElement).toBe(viewButton);
+    fireEvent.click(viewButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Booking BK-1040")).toBeDefined();
+    });
+
+    const drawerContent = document.querySelector(".ant-drawer-content") as HTMLElement | null;
+    expect(drawerContent).not.toBeNull();
+    fireEvent.keyDown(drawerContent!, { key: "Escape", code: "Escape" });
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(viewButton);
+    });
+  });
 });

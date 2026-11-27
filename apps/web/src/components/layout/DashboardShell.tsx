@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
@@ -51,6 +51,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
   const user = useAppSelector(selectAuthUser);
   const sidebarCollapsed = useAppSelector(selectSidebarCollapsed);
   const mobileMenuOpen = useAppSelector(selectMobileMenuOpen);
+  const mobileMenuTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   const navItems = getDashboardNavItems(user?.role);
   const matchedItem = matchDashboardNavItem(pathname);
@@ -143,7 +144,14 @@ export function DashboardShell({ children }: DashboardShellProps) {
         placement="left"
         width={280}
         open={mobileMenuOpen}
-        onClose={() => dispatch(setMobileMenuOpen(false))}
+        onClose={() => {
+          dispatch(setMobileMenuOpen(false));
+          window.setTimeout(() => {
+            if (mobileMenuTriggerRef.current?.isConnected) {
+              mobileMenuTriggerRef.current.focus();
+            }
+          }, 0);
+        }}
         title={
           <span className="font-serif text-[20px] font-semibold text-neutral-0">Grand Hotel</span>
         }
@@ -158,6 +166,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
           <div className="flex min-w-0 items-center gap-3">
             <Tooltip title="Open navigation menu">
               <Button
+                ref={mobileMenuTriggerRef}
                 type="text"
                 icon={<MenuOutlined className="text-[24px]" aria-hidden="true" />}
                 aria-label="Open navigation menu"

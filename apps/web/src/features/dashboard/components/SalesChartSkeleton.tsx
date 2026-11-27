@@ -2,7 +2,18 @@
 
 import { Skeleton } from "antd";
 
-const CHART_BAR_HEIGHTS = [42, 68, 54, 82, 60, 92, 74, 58, 86, 66] as const;
+const CHART_BAR_SLOTS = [
+  { id: "bar-1", heightPercent: 42 },
+  { id: "bar-2", heightPercent: 68 },
+  { id: "bar-3", heightPercent: 54 },
+  { id: "bar-4", heightPercent: 82 },
+  { id: "bar-5", heightPercent: 60 },
+  { id: "bar-6", heightPercent: 92 },
+  { id: "bar-7", heightPercent: 74 },
+  { id: "bar-8", heightPercent: 58 },
+  { id: "bar-9", heightPercent: 86 },
+  { id: "bar-10", heightPercent: 66 },
+] as const;
 
 export interface SalesChartSkeletonProps {
   label?: string;
@@ -17,11 +28,11 @@ export function SalesChartSkeleton({ label = "Loading sales chart" }: SalesChart
       className="flex h-[280px] flex-col justify-between pt-2"
     >
       <div className="flex flex-1 items-end gap-3 border-b border-line pb-3">
-        {CHART_BAR_HEIGHTS.map((heightPercent, index) => (
+        {CHART_BAR_SLOTS.map((slot) => (
           <div
-            key={index}
+            key={slot.id}
             className="flex flex-1 items-end"
-            style={{ height: `${heightPercent}%` }}
+            style={{ height: `${slot.heightPercent}%` }}
           >
             <Skeleton.Node
               active

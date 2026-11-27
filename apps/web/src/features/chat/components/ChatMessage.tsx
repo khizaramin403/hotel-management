@@ -78,7 +78,7 @@ export const ChatMessage = memo(function ChatMessage({
               <Button
                 type="link"
                 size="small"
-                className="!h-auto !p-0 text-[12px] leading-[18px]"
+                className="!h-auto !min-h-[44px] !px-2 text-[12px] leading-[18px] md:!min-h-0 md:!p-0"
                 onClick={() => onRetry(clientId)}
               >
                 Retry

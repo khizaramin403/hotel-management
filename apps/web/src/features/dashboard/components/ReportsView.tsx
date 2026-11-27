@@ -131,9 +131,15 @@ function isOccupancyReportEmpty(report: OccupancyReport | undefined): boolean {
   );
 }
 
+function renderReportStatisticTitle(label: string) {
+  return (
+    <span className="font-sans text-[13px] font-normal leading-[20px] text-muted">{label}</span>
+  );
+}
+
 function renderReportStatisticValue(formattedValue: string) {
   return (
-    <span className="font-serif text-[24px] font-medium leading-[32px] tabular text-ink">
+    <span className="font-serif text-[28px] font-semibold leading-[36px] tabular text-ink sm:text-[32px] sm:leading-[40px]">
       {formattedValue}
     </span>
   );
@@ -264,16 +270,16 @@ export function ReportsView() {
         stats={
           salesData ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="rounded-md border border-line bg-neutral-0 p-4">
+              <div className="rounded-md border border-line bg-neutral-0 p-6">
                 <Statistic
-                  title="Total revenue"
+                  title={renderReportStatisticTitle("Total revenue")}
                   value={salesData.totalRevenue}
                   formatter={(value) => renderReportStatisticValue(formatPrice(Number(value)))}
                 />
               </div>
-              <div className="rounded-md border border-line bg-neutral-0 p-4">
+              <div className="rounded-md border border-line bg-neutral-0 p-6">
                 <Statistic
-                  title="Bookings"
+                  title={renderReportStatisticTitle("Bookings")}
                   value={salesData.bookingCount}
                   formatter={(value) =>
                     renderReportStatisticValue(formatStatCount(Number(value)))
@@ -306,9 +312,9 @@ export function ReportsView() {
         stats={
           occupancyData ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="rounded-md border border-line bg-neutral-0 p-4">
+              <div className="rounded-md border border-line bg-neutral-0 p-6">
                 <Statistic
-                  title="Occupancy rate"
+                  title={renderReportStatisticTitle("Occupancy rate")}
                   value={occupancyData.occupancyRate}
                   formatter={(value) =>
                     renderReportStatisticValue(formatOccupancyRate(Number(value)))
