@@ -3,9 +3,11 @@ import {
   ERROR_CODE,
   nightsBetween,
   type Booking,
+  type Conversation,
   type ErrorCode,
   type ErrorResponse,
   type Image,
+  type Message,
   type PaginationMeta,
   type Payment,
   type Role,
@@ -17,6 +19,7 @@ import type { AxiosRequestConfig } from "axios";
 import type { z } from "zod";
 import { extractRequestId } from "@/lib/api/errors";
 import { createSeedBookings } from "./seed/bookings";
+import { createSeedChat } from "./seed/chat";
 import { buildRoomImageUrls, cloneRoomDetail, createSeedRooms } from "./seed/rooms";
 
 const DEFAULT_MOCK_LATENCY_MS = 400;
@@ -62,6 +65,14 @@ const SEED_USERS: readonly MockUserRecord[] = [
     role: "guest",
     createdAt: "2026-11-20T14:15:00.000Z",
   },
+  {
+    id: 5,
+    name: "Zara Ahmed",
+    email: "guest3@example.com",
+    password: "Passw0rd!123",
+    role: "guest",
+    createdAt: "2026-11-21T10:00:00.000Z",
+  },
 ];
 
 interface MockDbState {
@@ -77,6 +88,10 @@ interface MockDbState {
   nextPaymentId: number;
   idempotencyIndex: Map<string, number>;
   paymentTimers: Map<number, ReturnType<typeof setTimeout>>;
+  conversations: Conversation[];
+  messages: Message[];
+  nextConversationId: number;
+  nextMessageId: number;
 }
 
 function getMaxImageId(rooms: readonly RoomDetail[]): number {
@@ -94,10 +109,11 @@ function getMaxImageId(rooms: readonly RoomDetail[]): number {
 const initialSeedUsers = SEED_USERS.map((user) => ({ ...user }));
 const initialSeedRooms = createSeedRooms();
 const initialBookingsBundle = createSeedBookings(initialSeedUsers, initialSeedRooms);
+const initialChatBundle = createSeedChat(initialSeedUsers);
 
 const dbState: MockDbState = {
   users: initialSeedUsers,
-  nextUserId: 5,
+  nextUserId: 6,
   currentUserId: null,
   rooms: initialSeedRooms,
   nextRoomId: initialSeedRooms.length + 1,
@@ -108,6 +124,10 @@ const dbState: MockDbState = {
   nextPaymentId: initialBookingsBundle.nextPaymentId,
   idempotencyIndex: new Map(),
   paymentTimers: new Map(),
+  conversations: initialChatBundle.conversations,
+  messages: initialChatBundle.messages,
+  nextConversationId: initialChatBundle.nextConversationId,
+  nextMessageId: initialChatBundle.nextMessageId,
 };
 
 export function getMockLatencyMs(): number {
@@ -164,9 +184,10 @@ export function resetMockDb(): void {
   const freshUsers = SEED_USERS.map((user) => ({ ...user }));
   const freshRooms = createSeedRooms();
   const freshBookings = createSeedBookings(freshUsers, freshRooms);
+  const freshChat = createSeedChat(freshUsers);
 
   dbState.users = freshUsers;
-  dbState.nextUserId = 5;
+  dbState.nextUserId = 6;
   dbState.currentUserId = null;
   dbState.rooms = freshRooms;
   dbState.nextRoomId = freshRooms.length + 1;
@@ -176,6 +197,10 @@ export function resetMockDb(): void {
   dbState.nextBookingId = freshBookings.nextBookingId;
   dbState.nextPaymentId = freshBookings.nextPaymentId;
   dbState.idempotencyIndex.clear();
+  dbState.conversations = freshChat.conversations;
+  dbState.messages = freshChat.messages;
+  dbState.nextConversationId = freshChat.nextConversationId;
+  dbState.nextMessageId = freshChat.nextMessageId;
   clearMockRoleCookie();
 }
 
@@ -592,6 +617,110 @@ export function markMockBookingPaidAndRefundIfPaid(booking: Booking): void {
     }
     booking.payment = { id: booking.payment.id, status: "failed" };
   }
+}
+
+export function cloneConversation(conversation: Conversation): Conversation {
+  return {
+    ...conversation,
+    lastMessage: conversation.lastMessage ? { ...conversation.lastMessage } : null,
+  };
+}
+
+export function cloneMessage(message: Message): Message {
+  return { ...message };
+}
+
+export function getMockConversations(): Conversation[] {
+  return dbState.conversations;
+}
+
+export function getMockMessages(): Message[] {
+  return dbState.messages;
+}
+
+export function findMockConversationById(id: number): Conversation | undefined {
+  return dbState.conversations.find((conversation) => conversation.id === id);
+}
+
+export function findOpenMockConversationByGuestId(guestId: number): Conversation | undefined {
+  return dbState.conversations.find(
+    (conversation) => conversation.guestId === guestId && conversation.status === "open",
+  );
+}
+
+export function createOrGetMockConversation(guest: Pick<User, "id" | "name">): Conversation {
+  const existing = findOpenMockConversationByGuestId(guest.id);
+  if (existing) {
+    return cloneConversation(existing);
+  }
+
+  const created: Conversation = {
+    id: dbState.nextConversationId,
+    guestId: guest.id,
+    guestName: guest.name,
+    staffId: null,
+    status: "open",
+    lastMessage: null,
+    unreadCount: 0,
+  };
+  dbState.nextConversationId += 1;
+  dbState.conversations.push(created);
+  return cloneConversation(created);
+}
+
+export function getMockMessagesForConversation(conversationId: number): Message[] {
+  return dbState.messages
+    .filter((message) => message.conversationId === conversationId)
+    .sort((a, b) => b.id - a.id);
+}
+
+export function appendMockChatMessage(input: {
+  conversationId: number;
+  senderId: number;
+  senderRole: Role;
+  text: string;
+  incrementUnread?: boolean;
+}): { message: Message; conversation: Conversation } | null {
+  const conversation = findMockConversationById(input.conversationId);
+  if (!conversation) {
+    return null;
+  }
+
+  const message: Message = {
+    id: dbState.nextMessageId,
+    conversationId: input.conversationId,
+    senderId: input.senderId,
+    senderRole: input.senderRole,
+    text: input.text,
+    createdAt: new Date().toISOString(),
+  };
+  dbState.nextMessageId += 1;
+  dbState.messages.push(message);
+
+  conversation.lastMessage = {
+    text: message.text,
+    createdAt: message.createdAt,
+  };
+  if (input.senderRole === "staff" || input.senderRole === "admin") {
+    conversation.staffId = input.senderId;
+  }
+  if (input.incrementUnread) {
+    conversation.unreadCount += 1;
+  }
+
+  return {
+    message: cloneMessage(message),
+    conversation: cloneConversation(conversation),
+  };
+}
+
+export function markMockConversationRead(conversationId: number): Conversation | null {
+  const conversation = findMockConversationById(conversationId);
+  if (!conversation) {
+    return null;
+  }
+  conversation.unreadCount = 0;
+  return cloneConversation(conversation);
 }
 
 export function successEnvelope<T>(data: T): { success: true; data: T } {

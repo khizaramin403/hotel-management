@@ -3,6 +3,8 @@ import { logout } from "@/lib/api/endpoints/auth";
 import { clearMockRoleCookie } from "@/mocks/db";
 import type { AppDispatch } from "@/store";
 import { clearAuth } from "@/store/slices/authSlice";
+import { resetCall } from "@/store/slices/callSlice";
+import { resetChat } from "@/store/slices/chatSlice";
 
 export function getUserInitials(name: string): string {
   const parts = name
@@ -29,6 +31,8 @@ export async function performClientLogout(
   } finally {
     clearMockRoleCookie();
     dispatch(clearAuth());
+    dispatch(resetChat());
+    dispatch(resetCall());
     queryClient?.clear();
   }
 }

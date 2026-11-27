@@ -8,8 +8,17 @@ import { configureApiAuthHandlers, ensureMocksInitialized } from "@/lib/api/clie
 import { getMe } from "@/lib/api/endpoints/auth";
 import { makeStore } from "@/store";
 import { attachBookingDraftPersistence } from "@/store/bookingDraftStorage";
-import { clearAuth, setAuthLoading, setAuthUser } from "@/store/slices/authSlice";
+import { useAppSelector } from "@/store/hooks";
+import {
+  clearAuth,
+  selectIsAuthenticated,
+  setAuthLoading,
+  setAuthUser,
+} from "@/store/slices/authSlice";
+import { resetCall } from "@/store/slices/callSlice";
+import { resetChat } from "@/store/slices/chatSlice";
 import { AntdProvider } from "./AntdProvider";
+import { SocketProvider } from "./SocketProvider";
 
 const ReactQueryDevtools =
   process.env.NODE_ENV === "development"
@@ -34,6 +43,17 @@ export function makeQueryClient() {
   });
 }
 
+function AuthenticatedSocketGate({ children }: Readonly<{ children: ReactNode }>) {
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const userId = useAppSelector((state) => state.auth.user?.id ?? null);
+
+  if (!isAuthenticated || userId === null) {
+    return <>{children}</>;
+  }
+
+  return <SocketProvider key={userId}>{children}</SocketProvider>;
+}
+
 export function AppProviders({ children }: Readonly<{ children: ReactNode }>) {
   const [store] = useState(() => makeStore());
   const [queryClient] = useState(() => makeQueryClient());
@@ -45,6 +65,8 @@ export function AppProviders({ children }: Readonly<{ children: ReactNode }>) {
     configureApiAuthHandlers({
       onUnauthorized: () => {
         store.dispatch(clearAuth());
+        store.dispatch(resetChat());
+        store.dispatch(resetCall());
       },
     });
 
@@ -75,7 +97,9 @@ export function AppProviders({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <AntdProvider>{children}</AntdProvider>
+        <AntdProvider>
+          <AuthenticatedSocketGate>{children}</AuthenticatedSocketGate>
+        </AntdProvider>
         {ReactQueryDevtools ? <ReactQueryDevtools initialIsOpen={false} /> : null}
       </QueryClientProvider>
     </Provider>
