@@ -13,7 +13,8 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { Button, Skeleton, Steps } from "antd";
 import { ErrorState } from "@/components/ui";
-import { useRoomAvailabilityQuery, useRoomQuery } from "@/features/rooms";
+import { useRoomAvailabilityQuery } from "@/features/rooms/hooks/useRoomAvailabilityQuery";
+import { useRoomQuery } from "@/features/rooms/hooks/useRoomQuery";
 import { ApiClientError, queryKeys } from "@/lib/api";
 import { getTodayCalendarDate } from "@/lib/datePicker";
 import { attachBookingDraftPersistence } from "@/store/bookingDraftStorage";

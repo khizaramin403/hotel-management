@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { ReportsSkeleton, ReportsView } from "@/features/dashboard";
+import { ReportsSkeleton, ReportsView } from "@/features/dashboard/components/ReportsView";
 
 export default function DashboardReportsPage() {
   return (

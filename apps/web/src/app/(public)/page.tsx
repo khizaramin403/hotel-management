@@ -1,12 +1,9 @@
 import { Suspense } from "react";
-import {
-  DEFAULT_ROOMS_LIMIT,
-  HeroSearchCard,
-  HeroSearchCardFallback,
-  HomeHero,
-  HomeRoomsSection,
-  RoomGrid,
-} from "@/features/rooms";
+import { HeroSearchCard, HeroSearchCardFallback } from "@/features/rooms/components/HeroSearchCard";
+import { HomeHero } from "@/features/rooms/components/HomeHero";
+import { HomeRoomsSection } from "@/features/rooms/components/HomeRoomsSection";
+import { RoomGrid } from "@/features/rooms/components/RoomGrid";
+import { DEFAULT_ROOMS_LIMIT } from "@/features/rooms/lib/searchParams";
 
 export default function HomePage() {
   return (

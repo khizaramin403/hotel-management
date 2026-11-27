@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { MyBookingsSkeleton, MyBookingsView } from "@/features/bookings";
+import { MyBookingsSkeleton, MyBookingsView } from "@/features/bookings/components/MyBookingsView";
 
 export default function MyBookingsPage() {
   return (

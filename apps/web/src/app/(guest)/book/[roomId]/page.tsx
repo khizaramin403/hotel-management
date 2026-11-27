@@ -1,4 +1,4 @@
-import { BookingFlowView } from "@/features/bookings";
+import { BookingFlowView } from "@/features/bookings/components/BookingFlowView";
 
 export default async function BookRoomPage({
   params,

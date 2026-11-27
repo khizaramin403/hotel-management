@@ -1,4 +1,4 @@
-import { RoomDetailView } from "@/features/rooms";
+import { RoomDetailView } from "@/features/rooms/components/RoomDetailView";
 
 export default async function RoomDetailPage({
   params,

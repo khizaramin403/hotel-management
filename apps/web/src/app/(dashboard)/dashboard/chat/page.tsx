@@ -1,4 +1,4 @@
-import { StaffChatView } from "@/features/chat";
+import { StaffChatView } from "@/features/chat/components/StaffChatView";
 
 export default function DashboardChatPage() {
   return <StaffChatView />;

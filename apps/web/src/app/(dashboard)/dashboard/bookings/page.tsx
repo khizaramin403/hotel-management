@@ -1,5 +1,8 @@
 import { Suspense } from "react";
-import { StaffBookingsSkeleton, StaffBookingsView } from "@/features/bookings";
+import {
+  StaffBookingsSkeleton,
+  StaffBookingsView,
+} from "@/features/bookings/components/StaffBookingsView";
 
 export default function DashboardBookingsPage() {
   return (
