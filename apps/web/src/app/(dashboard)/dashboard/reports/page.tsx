@@ -1,12 +1,10 @@
-import { PageHeader } from "@/components/ui";
+import { Suspense } from "react";
+import { ReportsSkeleton, ReportsView } from "@/features/dashboard";
 
 export default function DashboardReportsPage() {
   return (
-    <section>
-      <PageHeader title="Reports" variant="h3" />
-      <p className="mt-4 font-sans text-[14px] leading-[22px] text-muted">
-        Coming in the next steps.
-      </p>
-    </section>
+    <Suspense fallback={<ReportsSkeleton />}>
+      <ReportsView />
+    </Suspense>
   );
 }

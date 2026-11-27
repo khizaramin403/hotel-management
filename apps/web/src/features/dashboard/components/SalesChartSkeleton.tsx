@@ -4,12 +4,16 @@ import { Skeleton } from "antd";
 
 const CHART_BAR_HEIGHTS = [42, 68, 54, 82, 60, 92, 74, 58, 86, 66] as const;
 
-export function SalesChartSkeleton() {
+export interface SalesChartSkeletonProps {
+  label?: string;
+}
+
+export function SalesChartSkeleton({ label = "Loading sales chart" }: SalesChartSkeletonProps) {
   return (
     <div
       role="status"
       aria-busy="true"
-      aria-label="Loading sales chart"
+      aria-label={label}
       className="flex h-[280px] flex-col justify-between pt-2"
     >
       <div className="flex flex-1 items-end gap-3 border-b border-line pb-3">
