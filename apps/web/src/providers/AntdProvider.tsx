@@ -152,6 +152,13 @@ const theme: ThemeConfig = {
     },
     Notification: {
       width: 320,
+      borderRadiusLG: 8,
+      colorBgElevated: "#FFFFFF",
+      colorInfoBg: "#FFFFFF",
+      colorSuccessBg: "#FFFFFF",
+      colorErrorBg: "#FFFFFF",
+      colorWarningBg: "#FFFFFF",
+      boxShadow: "0 6px 16px rgba(20,49,44,0.12)",
     },
   },
 };
