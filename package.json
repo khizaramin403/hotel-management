@@ -15,7 +15,9 @@
     "db:up": "docker compose up -d postgres redis",
     "db:down": "docker compose down",
     "db:logs": "docker compose logs -f postgres redis",
-    "check:env": "tsx scripts/check-env.ts"
+    "check:env": "tsx scripts/check-env.ts",
+    "dev:gateway": "pnpm --filter @hotel/dev-gateway dev",
+    "dev:services": "concurrently --names gateway -c cyan \"pnpm dev:gateway\""
   },
   "devDependencies": {
     "@types/node": "^20.19.43",
