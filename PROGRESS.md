@@ -43,3 +43,4 @@ Step list and prompts: PROMPTS.md and the PHASE*_PROMPTS.md files.
 2026-11-27 | STEP 3.11 | Built Redux notifications slice (max 10 newest first, mark all read), accessible header NotificationBell in DashboardShell and PublicHeader with 'No notifications' empty state, SocketProvider top-right chat toast and booking query cache observer, Ant Design notification surface styling fix, and tests
 2026-11-27 | STEP 3.12 | Reviewed Phase 3 dashboard pages, call popup, and notification bell against DESIGN.md, DECISIONS.md, and PERFORMANCE.md, fixed differences and feature barrel imports, measured pre-rendered route bundles, and verified lint, typecheck, and 190 Vitest tests
 2026-11-28 | STEP 3.13 | manual check passed: guest, staff, and admin pages, chat, call, notifications
+2026-11-28 | STEP 4.1 | Added Postgres 16 and Redis 7 Docker Compose setup, .env.example/.env, root DB scripts, and scripts/check-env.ts verification
