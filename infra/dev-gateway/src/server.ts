@@ -9,6 +9,14 @@ function start(): void {
     healthTimeoutMs: config.healthTimeoutMs,
   });
 
+  server.on("error", (error: NodeJS.ErrnoException) => {
+    logger.error(
+      { port: config.port, code: error.code, error: error.message },
+      error.code === "EADDRINUSE" ? "dev-gateway port already in use" : "dev-gateway server error",
+    );
+    process.exit(1);
+  });
+
   server.listen(config.port, () => {
     logger.info({ port: config.port, targets }, "dev-gateway listening");
   });
