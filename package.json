@@ -11,13 +11,21 @@
     "test": "pnpm -r --if-present test",
     "build": "pnpm -r --if-present build",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "db:up": "docker compose up -d postgres redis",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f postgres redis",
+    "check:env": "tsx scripts/check-env.ts"
   },
   "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@types/pg": "^8.23.1",
     "concurrently": "^10.0.7",
     "cross-env": "^10.1.0",
     "eslint": "^10.15.0",
     "eslint-config-prettier": "^10.1.8",
+    "ioredis": "^6.1.0",
+    "pg": "^8.23.1",
     "prettier": "^3.10.1",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
